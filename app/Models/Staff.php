@@ -45,4 +45,16 @@ class Staff extends Model
     {
         return $this->hasMany(ClassRoom::class, 'class_teacher_id');
     }
+
+    public function getFirstNameAttribute()
+    {
+        $parts = explode(' ', $this->name);
+        return $parts[0] ?? '';
+    }
+
+    public function getLastNameAttribute()
+    {
+        $parts = explode(' ', $this->name);
+        return isset($parts[1]) ? implode(' ', array_slice($parts, 1)) : '';
+    }
 }

@@ -52,16 +52,14 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="{{ route('exams.admit-cards', $exam->id) }}" class="text-gray-600 hover:text-gray-900 mr-3" title="Print Admit Cards">
+                            <a href="{{ route('exams.admit-cards', $exam->id) }}"
+                                class="text-gray-600 hover:text-gray-900 mr-3" title="Print Admit Cards">
                                 <i class="fas fa-id-card"></i>
                             </a>
-                            <form action="{{ route('exams.destroy', $exam->id) }}" method="POST" class="inline-block"
-                                onsubmit="return confirm('Are you sure? This will delete all associated marks.');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900"><i
-                                        class="fas fa-trash"></i></button>
-                            </form>
+                            <a href="{{ route('exams.delete', $exam->id) }}" class="text-red-600 hover:text-red-900"
+                                title="Delete Exam">
+                                <i class="fas fa-trash"></i>
+                            </a>
                         </td>
                     </tr>
                 @endforeach

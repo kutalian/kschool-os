@@ -1,4 +1,8 @@
 <x-master-layout>
+    @php
+        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\ClassRoom> $classes */
+        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\StudentParent> $parents */
+    @endphp
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">New Student Admission</h1>
         <p class="text-gray-500">Enter student details and parent information.</p>
@@ -246,18 +250,87 @@
             </div>
 
             <!-- Existing Parent Select -->
-            <div x-show="parentChoice === 'existing'" class="hidden">
-                <div class="bg-yellow-50 p-4 rounded-md border border-yellow-200">
-                    <p class="text-yellow-700 text-sm">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        Please enter the Parent ID directly.
+            <div x-show="parentChoice === 'existing'" class="hidden" :class="{'hidden': parentChoice !== 'existing'}">
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
+                    <p class="text-blue-800 text-sm flex items-center gap-2">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                        Search for a parent by name, email, or phone number.
                     </p>
-                    <div class="mt-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2">Parent ID</label>
-                        <input type="number" name="parent_id" value="{{ old('parent_id') }}"
-                            class="w-full md:w-1/3 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition"
-                            placeholder="Enter Parent ID">
-                        @error('parent_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div x-data="{
+                    search: '',
+                    isOpen: false,
+                    selectedParent: null,
+                    parents: {{ $parents->map(function ($p) {
+    return ['id' => $p->id, 'name' => $p->name, 'phone' => $p->phone, 'email' => $p->email];
+})->toJson() }},
+                    
+                    get filteredParents() {
+                        if (this.search === '') {
+                            return this.parents.slice(0, 10);
+                        }
+                        return this.parents.filter(parent => {
+                            return parent.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                                   (parent.email && parent.email.toLowerCase().includes(this.search.toLowerCase())) ||
+                                   (parent.phone && parent.phone.includes(this.search));
+                        }).slice(0, 10);
+                    },
+
+                    selectParent(parent) {
+                        this.selectedParent = parent;
+                        this.search = '';
+                        this.isOpen = false;
+                    }
+                }" class="relative">
+
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Search Parent</label>
+                    <input type="hidden" name="parent_id" :value="selectedParent ? selectedParent.id : ''">
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" x-model="search" @focus="isOpen = true" @click.away="isOpen = false"
+                            placeholder="Type name, email or phone..."
+                            class="w-full pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition"
+                            autocomplete="off">
+
+                        <!-- Selected Badge -->
+                        <template x-if="selectedParent">
+                            <div
+                                class="absolute right-2 top-2 bottom-2 bg-blue-100 text-blue-800 px-3 flex items-center rounded-md border border-blue-200">
+                                <span x-text="selectedParent.name" class="text-sm font-medium mr-2"></span>
+                                <button type="button" @click="selectedParent = null; search = ''"
+                                    class="text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Dropdown -->
+                    <div x-show="isOpen && filteredParents.length > 0"
+                        class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        style="display: none;">
+                        <template x-for="parent in filteredParents" :key="parent.id">
+                            <div @click="selectParent(parent)"
+                                class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition">
+                                <div class="font-medium text-gray-800" x-text="parent.name"></div>
+                                <div class="text-xs text-gray-500 flex gap-3 mt-1">
+                                    <span x-show="parent.phone"><i class="fas fa-phone mr-1"></i><span
+                                            x-text="parent.phone"></span></span>
+                                    <span x-show="parent.email"><i class="fas fa-envelope mr-1"></i><span
+                                            x-text="parent.email"></span></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div x-show="isOpen && filteredParents.length === 0"
+                        class="absolute z-10 w-full mt-1 bg-white p-4 text-center text-gray-500 border border-gray-200 rounded-lg shadow-lg"
+                        style="display: none;">
+                        No parents found.
                     </div>
                 </div>
             </div>

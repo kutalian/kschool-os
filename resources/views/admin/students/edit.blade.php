@@ -1,4 +1,9 @@
 <x-master-layout>
+    @php
+        /** @var \App\Models\Student $student */
+        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\ClassRoom> $classes */
+        /** @var \Illuminate\Database\Eloquent\Collection<\App\Models\StudentParent> $parents */
+    @endphp
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Edit Student</h1>
         <p class="text-gray-500">Update details for {{ $student->name }} ({{ $student->admission_no }})</p>
@@ -76,7 +81,7 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2">Date of Birth <span
                             class="text-red-500">*</span></label>
                     <input type="date" name="dob"
-                        value="{{ old('dob', $student->dob ? $student->dob->format('Y-m-d') : '') }}" required
+                        value="{{ old('dob', ($student->dob instanceof \DateTime) ? $student->dob->format('Y-m-d') : $student->dob) }}" required
                         class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
                     @error('dob') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                 </div>
@@ -239,28 +244,103 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Parent ID</label>
-                    <input type="number" name="parent_id" value="{{ old('parent_id', $student->parent_id) }}"
-                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
-                </div>
-                <div class="md:col-span-2" x-data="{ showDetails: false }">
-                    <button type="button" @click="showDetails = !showDetails"
-                        class="text-blue-600 text-sm font-medium hover:underline">
-                        <span x-text="showDetails ? 'Hide Parent Details' : 'View Linked Parent Details'"></span>
-                    </button>
+            <div class="grid grid-cols-1 gap-6" x-data="{
+                search: '',
+                isOpen: false,
+                selectedParent: {{ $student->parent ? json_encode(['id' => $student->parent->id, 'name' => $student->parent->name, 'phone' => $student->parent->phone, 'email' => $student->parent->email]) : 'null' }},
+                parents: {{ $parents->map(function ($p) {
+    return ['id' => $p->id, 'name' => $p->name, 'phone' => $p->phone, 'email' => $p->email];
+})->toJson() }},
+                
+                get filteredParents() {
+                    if (this.search === '') {
+                        return this.parents.slice(0, 10);
+                    }
+                    return this.parents.filter(parent => {
+                        return parent.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                               (parent.email && parent.email.toLowerCase().includes(this.search.toLowerCase())) ||
+                               (parent.phone && parent.phone.includes(this.search));
+                    }).slice(0, 10);
+                },
 
-                    <div x-show="showDetails" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        @if($student->parent)
-                            <p class="text-sm"><strong>Name:</strong> {{ $student->parent->name }}</p>
-                            <p class="text-sm"><strong>Email:</strong> {{ $student->parent->email }}</p>
-                            <p class="text-sm"><strong>Phone:</strong> {{ $student->parent->phone }}</p>
-                        @else
-                            <p class="text-sm text-gray-500">No parent linked.</p>
-                        @endif
+                selectParent(parent) {
+                    this.selectedParent = parent;
+                    this.search = '';
+                    this.isOpen = false;
+                }
+            }">
+                <div class="relative">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Linked Parent</label>
+                    <input type="hidden" name="parent_id" :value="selectedParent ? selectedParent.id : ''">
+
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input type="text" x-model="search" @focus="isOpen = true" @click.away="isOpen = false"
+                            placeholder="Type ID, name, email or phone to search..."
+                            class="w-full pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition"
+                            autocomplete="off">
+
+                        <!-- Selected Badge -->
+                        <template x-if="selectedParent">
+                            <div
+                                class="absolute right-2 top-2 bottom-2 bg-blue-100 text-blue-800 px-3 flex items-center rounded-md border border-blue-200">
+                                <span x-text="selectedParent.name" class="text-sm font-medium mr-2"></span>
+                                <button type="button" @click="selectedParent = null; search = ''"
+                                    class="text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Dropdown -->
+                    <div x-show="isOpen && filteredParents.length > 0"
+                        class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        style="display: none;">
+                        <template x-for="parent in filteredParents" :key="parent.id">
+                            <div @click="selectParent(parent)"
+                                class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0 transition">
+                                <div class="font-medium text-gray-800" x-text="parent.name"></div>
+                                <div class="text-xs text-gray-500 flex gap-3 mt-1">
+                                    <span x-show="parent.phone"><i class="fas fa-phone mr-1"></i><span
+                                            x-text="parent.phone"></span></span>
+                                    <span x-show="parent.email"><i class="fas fa-envelope mr-1"></i><span
+                                            x-text="parent.email"></span></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- No Results -->
+                    <div x-show="isOpen && filteredParents.length === 0"
+                        class="absolute z-10 w-full mt-1 bg-white p-4 text-center text-gray-500 border border-gray-200 rounded-lg shadow-lg"
+                        style="display: none;">
+                        No parents found.
                     </div>
                 </div>
+
+                <!-- Info Card -->
+                <template x-if="selectedParent">
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <h4 class="text-sm font-bold text-gray-700 mb-2">Current Parent Details</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-500 block">Name</span>
+                                <span class="font-medium" x-text="selectedParent.name"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Email</span>
+                                <span class="font-medium" x-text="selectedParent.email"></span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block">Phone</span>
+                                <span class="font-medium" x-text="selectedParent.phone"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
 

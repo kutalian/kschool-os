@@ -132,6 +132,39 @@
             </div>
         </div>
 
+        <!-- Payroll & Banking -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Payroll & Banking</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Basic Salary -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Basic Salary</label>
+                    <input type="number" name="basic_salary" value="{{ old('basic_salary', $staff->basic_salary) }}"
+                        min="0" step="0.01"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+                <!-- Bank Name -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Bank Name</label>
+                    <input type="text" name="bank_name" value="{{ old('bank_name', $staff->bank_name) }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+                <!-- Account Number -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Account Number</label>
+                    <input type="text" name="bank_account_no"
+                        value="{{ old('bank_account_no', $staff->bank_account_no) }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+                <!-- Bank Code -->
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Bank Code / IFSC</label>
+                    <input type="text" name="bank_code" value="{{ old('bank_code', $staff->bank_code) }}"
+                        class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-sm transition">
+                </div>
+            </div>
+        </div>
+
         <div class="flex justify-end gap-3">
             <a href="{{ route('staff.index') }}"
                 class="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition font-medium">Cancel</a>

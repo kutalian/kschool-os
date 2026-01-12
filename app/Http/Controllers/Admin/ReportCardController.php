@@ -20,6 +20,7 @@ class ReportCardController extends Controller
         $students = [];
         $selectedClass = null;
         $selectedExam = null;
+        $recentReports = collect();
 
         if ($request->has('class_id') && $request->has('exam_id')) {
             $selectedClass = ClassRoom::find($request->class_id);
@@ -30,9 +31,19 @@ class ReportCardController extends Controller
                     ->orderBy('name')
                     ->get();
             }
+        } else {
+            // Fetch Recent Reports (Students with marks)
+            // We get the latest marks, then group by student and exam to get unique reports
+            $recentReports = Mark::with(['student.class_room', 'exam'])
+                ->latest('updated_at')
+                ->get()
+                ->unique(function ($item) {
+                    return $item->student_id . '-' . $item->exam_id;
+                })
+                ->take(10);
         }
 
-        return view('admin.reports.index', compact('classes', 'exams', 'students', 'selectedClass', 'selectedExam'));
+        return view('admin.reports.index', compact('classes', 'exams', 'students', 'selectedClass', 'selectedExam', 'recentReports'));
     }
 
     public function print($studentId, $examId)

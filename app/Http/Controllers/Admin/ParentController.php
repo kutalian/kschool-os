@@ -136,6 +136,6 @@ class ParentController extends Controller
             $parent->user->delete();
         }
         $parent->delete();
-        return redirect()->back()->with('success', 'Parent account deleted.');
+        return redirect()->route('parents.index')->with('success', 'Parent deleted.');
     }
 }

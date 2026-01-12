@@ -23,7 +23,8 @@ class StudentController extends Controller
     public function create()
     {
         $classes = ClassRoom::where('is_active', true)->get();
-        return view('admin.students.create', compact('classes'));
+        $parents = StudentParent::select('id', 'name', 'phone', 'email')->get();
+        return view('admin.students.create', compact('classes', 'parents'));
     }
 
     public function store(Request $request)
@@ -148,7 +149,7 @@ class StudentController extends Controller
     public function edit(Student $student)
     {
         $classes = ClassRoom::all();
-        $parents = StudentParent::all(); // Simplified for now
+        $parents = StudentParent::select('id', 'name', 'phone', 'email')->get();
         return view('admin.students.edit', compact('student', 'classes', 'parents'));
     }
 
@@ -256,7 +257,7 @@ class StudentController extends Controller
 
             return redirect()->route('students.index')->with('success', 'Student and all related records deleted successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Failed to delete student: ' . $e->getMessage());
+            return redirect()->route('students.index')->with('error', 'Failed to delete student: ' . $e->getMessage());
         }
     }
 }

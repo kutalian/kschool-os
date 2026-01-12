@@ -55,49 +55,197 @@
                 </a>
 
                 @if(auth()->user()->role === 'admin')
-                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Administration</div>
-                    <a href="{{ route('classes.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('classes.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-chalkboard w-6"></i> Classes
-                    </a>
-                    <a href="{{ route('subjects.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('subjects.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-book w-6"></i> Subjects
-                    </a>
-                    <a href="{{ route('users.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('users.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-users w-6"></i> Users
-                    </a>
-                    <a href="{{ route('staff.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-chalkboard-teacher w-6"></i> Staff
-                    </a>
-                    <a href="{{ route('students.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('students.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-user-graduate w-6"></i> Students
-                    </a>
-                    <a href="{{ route('parents.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('parents.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-user-friends w-6"></i> Parents
-                    </a>
-                    <a href="{{ route('attendance.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('attendance.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-calendar-check w-6"></i> Attendance
+
+                    <!-- Academic Group -->
+                    <div x-data="{ open: {{ request()->routeIs('classes.*', 'subjects.*', 'syllabus.*', 'assignments.*', 'timetable.*') ? 'true' : 'false' }} }"
+                        class="mt-2">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-graduation-cap w-6"></i> Academic
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('classes.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('classes.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Classes
+                            </a>
+                            <a href="{{ route('subjects.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('subjects.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Subjects
+                            </a>
+                            <a href="{{ route('syllabus.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('syllabus.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Syllabus
+                            </a>
+                            <a href="{{ route('assignments.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('assignments.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Assignments
+                            </a>
+                            <a href="{{ route('lesson-plans.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('lesson-plans.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Lesson Plans
+                            </a>
+                            <a href="{{ route('timetable.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('timetable.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Timetable
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Students Group -->
+                    <div x-data="{ open: {{ request()->routeIs('students.*', 'parents.*', 'attendance.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-user-graduate w-6"></i> Students
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('students.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('students.index', 'students.show', 'students.edit') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Students List
+                            </a>
+                            <a href="{{ route('students.create') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('students.create') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Add Student
+                            </a>
+                            <a href="{{ route('students.promotion') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('students.promotion') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Promote Students
+                            </a>
+                            <a href="{{ route('parents.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('parents.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Parents
+                            </a>
+                            <a href="{{ route('attendance.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('attendance.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Attendance
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Examinations Group -->
+                    <div x-data="{ open: {{ request()->routeIs('exams.*', 'exam-schedule.*', 'marks.*', 'reports.*', 'grades.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-file-alt w-6"></i> Examinations
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('exams.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('exams.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Exams List
+                            </a>
+                            <a href="{{ route('exam-schedule.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('exam-schedule.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Schedule
+                            </a>
+                            <a href="{{ route('marks.create') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('marks.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Enter Marks
+                            </a>
+                            <a href="{{ route('reports.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('reports.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Report Cards
+                            </a>
+                            <a href="{{ route('grades.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('grades.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Grade Settings
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Human Resources Group -->
+                    <div x-data="{ open: {{ request()->routeIs('staff.*', 'staff-attendance.*', 'performance-reviews.*', 'users.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-users w-6"></i> Human Resources
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('staff.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('staff.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Staff Directory
+                            </a>
+                            <a href="{{ route('staff-attendance.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('staff-attendance.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Staff Attendance
+                            </a>
+                            <a href="{{ route('performance-reviews.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('performance-reviews.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Performance
+                            </a>
+                            <a href="{{ route('users.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('users.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                System Users
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Financial Group -->
+                    <div x-data="{ open: {{ request()->routeIs('fees.*', 'expenses.*', 'payroll.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-wallet w-6"></i> Financial
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('fees.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('fees.index', 'fees.create', 'fees.edit') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Fee Types
+                            </a>
+                            <a href="{{ route('fees.assign') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('fees.assign') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Assign Fees
+                            </a>
+                            <a href="{{ route('fees.collect') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('fees.collect') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Collect Fees
+                            </a>
+                            <a href="{{ route('fees.report') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('fees.report') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Fee Reports
+                            </a>
+                            <a href="{{ route('expenses.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('expenses.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Expenses
+                            </a>
+                            <a href="{{ route('payroll.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('payroll.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Payroll
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Library Link (Standalone) -->
+                    <a href="{{ route('library.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('library.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-book-reader w-6"></i> Library
                     </a>
 
-                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Examination</div>
-                    <a href="{{ route('exams.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('exams.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-file-alt w-6"></i> Exams
-                    </a>
-                    <a href="{{ route('marks.create') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('marks.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-marker w-6"></i> Enter Marks
-                    </a>
-                    <a href="{{ route('reports.index') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('reports.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-print w-6"></i> Report Cards
-                    </a>
                 @endif
 
                 @if(auth()->user()->role === 'staff')

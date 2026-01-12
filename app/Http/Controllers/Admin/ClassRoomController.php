@@ -57,7 +57,7 @@ class ClassRoomController extends Controller
     public function destroy(ClassRoom $classRoom)
     {
         $classRoom->delete();
-        return redirect()->back()->with('success', 'Class deleted.');
+        return redirect()->route('classes.index')->with('success', 'Class deleted.');
     }
 
     public function assignSubjects(Request $request, ClassRoom $classRoom)

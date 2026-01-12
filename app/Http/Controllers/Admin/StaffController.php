@@ -193,6 +193,6 @@ class StaffController extends Controller
             $staff->user->delete();
         }
         $staff->delete();
-        return redirect()->back()->with('success', 'Staff member deleted.');
+        return redirect()->route('staff.index')->with('success', 'Staff member deleted.');
     }
 }

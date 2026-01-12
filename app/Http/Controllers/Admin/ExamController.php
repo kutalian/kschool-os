@@ -57,9 +57,15 @@ class ExamController extends Controller
         return view('admin.exams.admit-cards', compact('exam', 'students'));
     }
 
+    public function confirmDelete(Exam $exam)
+    {
+        $marksCount = \App\Models\Mark::where('exam_id', $exam->id)->count();
+        return view('admin.exams.delete', compact('exam', 'marksCount'));
+    }
+
     public function destroy(Exam $exam)
     {
         $exam->delete();
-        return redirect()->back()->with('success', 'Exam deleted successfully.');
+        return redirect()->route('exams.index')->with('success', 'Exam deleted successfully.');
     }
 }

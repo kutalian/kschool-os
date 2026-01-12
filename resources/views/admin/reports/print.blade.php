@@ -6,7 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Card - {{ $student->name }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
+        .font-signature {
+            font-family: 'Great Vibes', cursive;
+        }
+
         @media print {
             body {
                 -webkit-print-color-adjust: exact;
@@ -46,7 +51,8 @@
                     <tr>
                         <td class="font-bold py-1">Class:</td>
                         <td class="py-1 border-b border-gray-300">{{ $student->class_room->name }} -
-                            {{ $student->class_room->section }}</td>
+                            {{ $student->class_room->section }}
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -142,13 +148,24 @@
 
         <!-- Signatures -->
         <div class="flex justify-between items-end mt-20">
-            <div class="text-center">
-                <div class="border-t border-gray-400 w-40 mb-2"></div>
-                <p class="font-bold text-sm text-gray-600">Class Teacher</p>
+            <div class="text-center w-48">
+                <!-- Class Teacher Signature -->
+                <div class="font-signature text-3xl text-blue-900 mb-2 transform -rotate-2">
+                    {{ $student->class_room->teacher->first_name ?? '' }}
+                    {{ $student->class_room->teacher->last_name ?? 'Class Teacher' }}
+                </div>
+                <div class="border-t border-gray-400 pt-2">
+                    <p class="font-bold text-sm text-gray-600 uppercase">Class Teacher</p>
+                </div>
             </div>
-            <div class="text-center">
-                <div class="border-t border-gray-400 w-40 mb-2"></div>
-                <p class="font-bold text-sm text-gray-600">Principal</p>
+            <div class="text-center w-48">
+                <!-- Principal Signature -->
+                <div class="font-signature text-3xl text-blue-900 mb-2 transform -rotate-2">
+                    Principal
+                </div>
+                <div class="border-t border-gray-400 pt-2">
+                    <p class="font-bold text-sm text-gray-600 uppercase">Principal</p>
+                </div>
             </div>
             <div class="text-center">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ url()->current() }}"

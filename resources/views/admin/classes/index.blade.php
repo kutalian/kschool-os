@@ -1,7 +1,7 @@
 <x-master-layout>
-@php
-    /** @var \Illuminate\Pagination\LengthAwarePaginator|\App\Models\ClassRoom[] $classes */
-@endphp
+    @php
+        /** @var \Illuminate\Pagination\LengthAwarePaginator|\App\Models\ClassRoom[] $classes */
+    @endphp
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Class Management</h1>
         <button onclick="document.getElementById('createClassModal').classList.remove('hidden')"
@@ -58,7 +58,7 @@
                                 <i class="fas fa-book"></i>
                             </button>
                             <button
-                                onclick="openEditClassModal({{ $class->id }}, '{{ $class->name }}', '{{ $class->section }}', {{ $class->capacity }})"
+                                onclick="openEditClassModal({{ $class->id }}, '{{ $class->name }}', '{{ $class->section }}', {{ $class->capacity }}, {{ $class->class_teacher_id ?? 'null' }})"
                                 class="text-indigo-600 hover:text-indigo-900 mr-3"><i class="fas fa-edit"></i></button>
                             <a href="{{ route('classes.delete', $class->id) }}" class="text-red-600 hover:text-red-900"><i
                                     class="fas fa-trash"></i></a>
@@ -102,6 +102,18 @@
                             <input type="number" name="capacity" id="capacity"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 value="40" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="class_teacher_id" class="block text-gray-700 text-sm font-bold mb-2">Class
+                                Teacher</label>
+                            <select name="class_teacher_id" id="class_teacher_id"
+                                class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">-- Select Teacher --</option>
+                                @foreach($teachers as $teacher)
+                                    <option value="{{ $teacher->id }}">{{ $teacher->first_name }} {{ $teacher->last_name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
@@ -193,6 +205,18 @@
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 required>
                         </div>
+                        <div class="mb-4">
+                            <label for="edit_class_teacher_id" class="block text-gray-700 text-sm font-bold mb-2">Class
+                                Teacher</label>
+                            <select name="class_teacher_id" id="edit_class_teacher_id"
+                                class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="">-- Select Teacher --</option>
+                                @foreach($teachers as $teacher)
+                                    <option value="{{ $teacher->id }}">{{ $teacher->first_name }} {{ $teacher->last_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="submit"
@@ -227,12 +251,13 @@
             document.getElementById('assignSubjectsModal').classList.add('hidden');
         }
 
-        function openEditClassModal(id, name, section, capacity) {
+        function openEditClassModal(id, name, section, capacity, teacherId) {
             const form = document.getElementById('editClassForm');
             form.action = `/admin/classes/${id}`;
             document.getElementById('edit_name').value = name;
             document.getElementById('edit_section').value = section;
             document.getElementById('edit_capacity').value = capacity;
+            document.getElementById('edit_class_teacher_id').value = teacherId || '';
             document.getElementById('editClassModal').classList.remove('hidden');
         }
 
