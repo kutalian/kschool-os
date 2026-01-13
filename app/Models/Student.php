@@ -29,6 +29,7 @@ class Student extends Model
         'current_address',
         'permanent_address',
         'card_id',
+        'transport_route_id',
     ];
 
     protected $casts = [
@@ -59,6 +60,11 @@ class Student extends Model
     public function marks()
     {
         return $this->hasMany(Mark::class);
+    }
+
+    public function transportRoute()
+    {
+        return $this->belongsTo(TransportRoute::class);
     }
     public function getFirstNameAttribute()
     {

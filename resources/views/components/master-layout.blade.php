@@ -240,6 +240,12 @@
                         </div>
                     </div>
 
+                    <!-- Transport Link (Standalone) -->
+                    <a href="{{ route('transport.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('transport.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-bus w-6"></i> Transport
+                    </a>
+
                     <!-- Library Link (Standalone) -->
                     <a href="{{ route('library.index') }}"
                         class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('library.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">

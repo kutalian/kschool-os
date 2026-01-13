@@ -146,13 +146,28 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::post('exam-schedule/period/store', [App\Http\Controllers\Admin\ExamScheduleController::class, 'storePeriod'])->name('exam-schedule.period.store');
     Route::post('exam-schedule/period/destroy', [App\Http\Controllers\Admin\ExamScheduleController::class, 'destroyPeriod'])->name('exam-schedule.period.destroy');
 
+    // Transport Routes
+    Route::get('transport', [App\Http\Controllers\Admin\TransportController::class, 'index'])->name('transport.index');
+
+    // Vehicles
+    Route::post('transport/vehicles', [App\Http\Controllers\Admin\TransportController::class, 'storeVehicle'])->name('transport.vehicles.store');
+    Route::get('transport/vehicles/{vehicle}/edit', [App\Http\Controllers\Admin\TransportController::class, 'editVehicle'])->name('transport.vehicles.edit');
+    Route::put('transport/vehicles/{vehicle}', [App\Http\Controllers\Admin\TransportController::class, 'updateVehicle'])->name('transport.vehicles.update');
+    Route::get('transport/vehicles/{vehicle}/delete', [App\Http\Controllers\Admin\TransportController::class, 'confirmDeleteVehicle'])->name('transport.vehicles.delete');
+    Route::delete('transport/vehicles/{vehicle}', [App\Http\Controllers\Admin\TransportController::class, 'destroyVehicle'])->name('transport.vehicles.destroy');
+
+    // Routes
+    Route::post('transport/routes', [App\Http\Controllers\Admin\TransportController::class, 'storeRoute'])->name('transport.routes.store');
+    Route::get('transport/routes/{transportRoute}/edit', [App\Http\Controllers\Admin\TransportController::class, 'editRoute'])->name('transport.routes.edit');
+    Route::put('transport/routes/{transportRoute}', [App\Http\Controllers\Admin\TransportController::class, 'updateRoute'])->name('transport.routes.update');
+    Route::get('transport/routes/{transportRoute}/delete', [App\Http\Controllers\Admin\TransportController::class, 'confirmDeleteRoute'])->name('transport.routes.delete');
+    Route::delete('transport/routes/{transportRoute}', [App\Http\Controllers\Admin\TransportController::class, 'destroyRoute'])->name('transport.routes.destroy');
+
     Route::resource('exam-schedule', App\Http\Controllers\Admin\ExamScheduleController::class)->only(['index']);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/staff/dashboard', function () {
-        return view('staff.dashboard');
-    })->name('staff.dashboard');
+    Route::get('/staff/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
     Route::get('/student/dashboard', function () {
         return view('student.dashboard');
     })->name('student.dashboard');

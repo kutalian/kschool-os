@@ -7,6 +7,7 @@ use App\Models\ClassRoom;
 use App\Models\Student;
 use App\Models\StudentParent;
 use App\Models\User;
+use App\Models\TransportRoute; // Added Import
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -16,7 +17,8 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with(['class_room', 'parent', 'user'])->latest()->paginate(10);
+        // Eager load transportRoute
+        $students = Student::with(['class_room', 'parent', 'user', 'transportRoute'])->latest()->paginate(10);
         return view('admin.students.index', compact('students'));
     }
 
@@ -24,7 +26,8 @@ class StudentController extends Controller
     {
         $classes = ClassRoom::where('is_active', true)->get();
         $parents = StudentParent::select('id', 'name', 'phone', 'email')->get();
-        return view('admin.students.create', compact('classes', 'parents'));
+        $transportRoutes = TransportRoute::all(); // Fetch Routes
+        return view('admin.students.create', compact('classes', 'parents', 'transportRoutes'));
     }
 
     public function store(Request $request)
@@ -33,9 +36,9 @@ class StudentController extends Controller
             // Student Info
             'first_name' => 'required|string|max:50',
             'last_name' => 'required|string|max:50',
-            'email' => 'nullable|email|unique:users,email', // Email optional
-            // 'admission_no' removed from validation as it is auto-generated
+            'email' => 'nullable|email|unique:users,email',
             'class_id' => 'required|exists:classes,id',
+            'transport_route_id' => 'nullable|exists:school_transport_routes,id', // Updated table name
             'dob' => 'required|date',
             'gender' => 'required|in:Male,Female,Other',
             'blood_group' => 'nullable|string|max:10',
@@ -78,16 +81,13 @@ class StudentController extends Controller
         $sequence = $lastStudent ? $lastStudent->id + 1 : 1;
         $admissionNo = 'ST' . $year . str_pad($sequence, 4, '0', STR_PAD_LEFT);
 
-        // Generate Username (Login ID) - Using Admission No as base or random
-        // User requested example ST5982k1. Let's make it AdmissionNo based but simple.
-        // Actually, Admission No is unique, so using it as username is perfect.
         $username = $admissionNo;
 
         // Create Student User
         $studentUser = User::create([
             'username' => $username,
             'email' => $validated['email'] ?? null,
-            'password' => Hash::make('password'), // Default password
+            'password' => Hash::make('password'),
             'role' => 'student',
         ]);
 
@@ -95,7 +95,7 @@ class StudentController extends Controller
         if ($request->parent_choice === 'new') {
             // Create Parent User
             $parentUser = User::create([
-                'username' => 'P' . str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT), // Random Parent ID
+                'username' => 'P' . str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT),
                 'email' => $validated['parent_email'],
                 'password' => Hash::make('password'),
                 'role' => 'parent',
@@ -120,6 +120,7 @@ class StudentController extends Controller
             'email' => $validated['email'] ?? null,
             'class_id' => $validated['class_id'],
             'parent_id' => $parentId,
+            'transport_route_id' => $validated['transport_route_id'] ?? null, // Added
             'dob' => $validated['dob'],
             'gender' => $validated['gender'],
             'blood_group' => $validated['blood_group'] ?? null,
@@ -150,18 +151,18 @@ class StudentController extends Controller
     {
         $classes = ClassRoom::all();
         $parents = StudentParent::select('id', 'name', 'phone', 'email')->get();
-        return view('admin.students.edit', compact('student', 'classes', 'parents'));
+        $transportRoutes = TransportRoute::all(); // Fetch Routes
+        return view('admin.students.edit', compact('student', 'classes', 'parents', 'transportRoutes'));
     }
 
     public function update(Request $request, Student $student)
     {
         $validated = $request->validate([
-            // Student Info
             'first_name' => 'required|string|max:50',
             'last_name' => 'required|string|max:50',
             'email' => ['nullable', 'email', Rule::unique('users')->ignore($student->user_id)],
-            // 'admission_no' is read-only
             'class_id' => 'required|exists:classes,id',
+            'transport_route_id' => 'nullable|exists:school_transport_routes,id', // Updated table name
             'dob' => 'required|date',
             'gender' => 'required|in:Male,Female,Other',
             'blood_group' => 'nullable|string|max:10',
@@ -169,28 +170,18 @@ class StudentController extends Controller
             'religion' => 'nullable|string|max:100',
             'category' => 'nullable|string|max:50',
             'roll_no' => 'nullable|string|max:50',
-
-            // Contact & Address
             'phone' => 'nullable|string|max:20',
             'current_address' => 'nullable|string',
             'permanent_address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
             'country' => 'required|string|max:100',
-
-            // Emergency Contact
             'emergency_contact_name' => 'nullable|string|max:100',
             'emergency_contact_number' => 'nullable|string|max:20',
-
-            // Medical Info
             'allergies' => 'nullable|string',
             'medications' => 'nullable|string',
-
-            // Previous School
             'prev_school_name' => 'nullable|string|max:255',
             'prev_school_tc_no' => 'nullable|string|max:100',
-
-            // Parent Info
             'parent_id' => 'nullable|exists:parents,id',
         ]);
 
@@ -198,11 +189,9 @@ class StudentController extends Controller
         if ($student->user) {
             $student->user->update([
                 'email' => $validated['email'] ?? null,
-                // Optional: Update username if name changes? No, keep ID stable.
             ]);
         }
 
-        // Combine Name
         $validated['name'] = $validated['first_name'] . ' ' . $validated['last_name'];
         unset($validated['first_name'], $validated['last_name']);
 
@@ -215,12 +204,10 @@ class StudentController extends Controller
     {
         $student->load(['class_room', 'parent', 'user', 'attendance', 'marks.exam', 'marks.subject']);
 
-        // Calculate Attendance Stats
         $totalDays = $student->attendance->count();
         $presentDays = $student->attendance->where('status', 'Present')->count();
         $attendancePercentage = $totalDays > 0 ? round(($presentDays / $totalDays) * 100, 1) : 0;
 
-        // Group Marks by Exam
         $examResults = $student->marks->groupBy(function ($mark) {
             return $mark->exam->name;
         });
@@ -230,10 +217,7 @@ class StudentController extends Controller
 
     public function confirmDelete(Student $student)
     {
-        // Count related records
         $attendanceCount = \App\Models\Attendance::where('student_id', $student->id)->count();
-        // Add other related counts here as modules are implemented
-
         return view('admin.students.delete', compact('student', 'attendanceCount'));
     }
 
@@ -241,15 +225,10 @@ class StudentController extends Controller
     {
         try {
             \Illuminate\Support\Facades\DB::transaction(function () use ($student) {
-                // Delete related records manually
                 $student->attendance()->delete();
-
-                // Delete User account (which might cascade delete the student record depending on DB setup)
                 if ($student->user) {
                     $student->user->delete();
                 }
-
-                // Ensure student record is deleted if it still exists
                 if ($student->exists) {
                     $student->delete();
                 }
