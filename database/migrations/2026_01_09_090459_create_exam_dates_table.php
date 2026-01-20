@@ -10,13 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('exam_dates', function (Blueprint $table) {
-            $table->id();
-            $table->integer('exam_id');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->date('date');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('exam_dates')) {
+            Schema::create('exam_dates', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('exam_id')->constrained()->onDelete('cascade');
+                $table->date('date');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

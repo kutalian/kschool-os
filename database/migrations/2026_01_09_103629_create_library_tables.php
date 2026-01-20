@@ -38,8 +38,7 @@ return new class extends Migration {
         Schema::create('book_issues', function (Blueprint $table) {
             $table->id();
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
-            $table->integer('user_id'); // Matches users table id (int(11) signed)
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->date('issue_date');
             $table->date('due_date');
             $table->date('return_date')->nullable();

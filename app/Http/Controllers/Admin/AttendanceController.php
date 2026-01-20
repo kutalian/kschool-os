@@ -43,15 +43,19 @@ class AttendanceController extends Controller
             'date' => 'required|date',
             'attendance' => 'required|array',
             'attendance.*' => 'in:Present,Absent,Late,Excused',
+            'remarks' => 'nullable|array',
+            'remarks.*' => 'nullable|string|max:255',
         ]);
 
         $date = $request->date;
         $attendanceData = $request->attendance;
+        $remarksData = $request->input('remarks', []);
 
         foreach ($attendanceData as $studentId => $status) {
+            $remark = $remarksData[$studentId] ?? null;
             Attendance::updateOrCreate(
                 ['student_id' => $studentId, 'date' => $date],
-                ['status' => $status]
+                ['status' => $status, 'remarks' => $remark]
             );
         }
 

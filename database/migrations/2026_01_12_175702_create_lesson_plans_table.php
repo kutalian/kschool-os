@@ -13,10 +13,9 @@ return new class extends Migration {
         Schema::dropIfExists('lesson_plans');
         Schema::create('lesson_plans', function (Blueprint $table) {
             $table->id();
-            $table->integer('teacher_id');
-            $table->foreign('teacher_id')->references('id')->on('users')->onDelete('cascade');
-            $table->integer('class_id'); // Match existing custom integer ID for classes
-            $table->integer('subject_id'); // Match existing custom integer ID for subjects
+            $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->date('week_start_date');
             $table->string('topic');
             $table->text('objectives');

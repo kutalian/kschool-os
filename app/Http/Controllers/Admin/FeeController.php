@@ -9,9 +9,17 @@ use App\Models\Student;
 use App\Models\StudentFee;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use App\Services\FeeService;
 
 class FeeController extends Controller
 {
+    protected $feeService;
+
+    public function __construct(FeeService $feeService)
+    {
+        $this->feeService = $feeService;
+    }
+
     public function index()
     {
         $feeTypes = FeeType::where('is_active', true)->get();
@@ -71,8 +79,10 @@ class FeeController extends Controller
     {
         $feeTypes = FeeType::where('is_active', true)->get();
         $classes = ClassRoom::where('is_active', true)->get();
-        // Fixed: Use 'name' instead of 'first_name' which doesn't exist on students table
-        $students = Student::where('is_active', true)->orderBy('name')->get();
+        // Fixed: Removed is_active check if column missing, or ensure it exists.
+        // Assuming Student has is_active or we filter by user->is_active? 
+        // For now, removing is_active check on Student model to match current schema
+        $students = Student::orderBy('name')->get();
         return view('admin.fees.assign', compact('feeTypes', 'classes', 'students'));
     }
 
@@ -91,46 +101,18 @@ class FeeController extends Controller
             return back()->withErrors(['message' => 'Please select either a Class or a specific Student.']);
         }
 
-        $feeType = FeeType::findOrFail($request->fee_type_id);
         $count = 0;
+        $data = $request->only(['due_date', 'academic_year', 'term']);
 
         // Logic for Bulk Assignment (Class)
         if ($request->class_id) {
-            $students = Student::where('class_id', $request->class_id)->where('is_active', true)->get();
-            foreach ($students as $student) {
-                // Check if already assigned
-                $exists = StudentFee::where('student_id', $student->id)
-                    ->where('fee_type_id', $feeType->id)
-                    ->where('academic_year', $request->academic_year)
-                    ->where('term', $request->term)
-                    ->exists();
-
-                if (!$exists) {
-                    StudentFee::create([
-                        'student_id' => $student->id,
-                        'fee_type_id' => $feeType->id,
-                        'amount' => $feeType->amount,
-                        'due_date' => $request->due_date,
-                        'academic_year' => $request->academic_year,
-                        'term' => $request->term,
-                        'status' => 'Unpaid'
-                    ]);
-                    $count++;
-                }
-            }
+            $count = $this->feeService->assignToClass($request->class_id, $request->fee_type_id, $data);
         }
         // Logic for Individual Assignment
         elseif ($request->student_id) {
-            StudentFee::create([
-                'student_id' => $request->student_id,
-                'fee_type_id' => $feeType->id,
-                'amount' => $feeType->amount,
-                'due_date' => $request->due_date,
-                'academic_year' => $request->academic_year,
-                'term' => $request->term,
-                'status' => 'Unpaid'
-            ]);
-            $count = 1;
+            $assigned = $this->feeService->assignToStudent($request->student_id, $request->fee_type_id, $data);
+            if ($assigned)
+                $count = 1;
         }
 
         return redirect()->route('fees.index')->with('success', "$count students invoiced successfully.");
@@ -138,22 +120,16 @@ class FeeController extends Controller
 
     public function collect(Request $request)
     {
-        $students = Student::where('is_active', true)->orderBy('name')->get();
+        $students = Student::orderBy('name')->get();
         $selectedStudent = null;
         $fees = collect();
+        $payments = collect();
 
         if ($request->student_id) {
             $selectedStudent = Student::findOrFail($request->student_id);
-            $fees = StudentFee::where('student_id', $selectedStudent->id)
-                ->whereIn('status', ['Unpaid', 'Partial'])
-                ->with('feeType')
-                ->get();
-
-            $payments = Payment::whereHas('studentFee', function ($q) use ($selectedStudent) {
-                $q->where('student_id', $selectedStudent->id);
-            })->with(['studentFee.feeType'])->orderBy('payment_date', 'desc')->get();
-        } else {
-            $payments = collect();
+            $data = $this->feeService->getStudentCollectionData($request->student_id);
+            $fees = $data['fees'];
+            $payments = $data['payments'];
         }
 
         return view('admin.fees.collect', compact('students', 'selectedStudent', 'fees', 'payments'));
@@ -169,44 +145,22 @@ class FeeController extends Controller
             'payment_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $fee = StudentFee::findOrFail($request->student_fee_id);
-
-        // Calculate remaining balance
-        $remaining = $fee->amount - $fee->paid;
-
-        if ($request->amount > $remaining) {
-            return back()->with('error', "Payment amount cannot exceed remaining balance of ₦" . number_format($remaining, 2));
-        }
-
         // Handle File Upload
         $proofPath = null;
         if ($request->hasFile('payment_proof')) {
             $proofPath = $request->file('payment_proof')->store('payments', 'public');
         }
 
-        // Record Payment
-        Payment::create([
-            'student_fee_id' => $fee->id,
-            'amount' => $request->amount,
-            'payment_date' => now(),
-            'payment_method' => $request->payment_method,
-            'received_by' => auth()->id(),
-            'remarks' => $request->remarks,
-            'payment_proof' => $proofPath,
-            'status' => 'Approved'
-        ]);
+        $paymentData = $request->only(['amount', 'payment_method', 'remarks']) + ['payment_proof' => $proofPath];
 
-        // Update Fee Status
-        $fee->paid += $request->amount;
-        if ($fee->paid >= $fee->amount) {
-            $fee->status = 'Paid';
-        } else {
-            $fee->status = 'Partial';
+        try {
+            $payment = $this->feeService->recordPayment($request->student_fee_id, $paymentData);
+            return redirect()->route('fees.collect', ['student_id' => $payment->studentFee->student_id])
+                ->with('success', "Payment of ₦" . number_format($request->amount, 2) . " recorded successfully.");
+
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-        $fee->save();
-
-        return redirect()->route('fees.collect', ['student_id' => $fee->student_id])
-            ->with('success', "Payment of ₦" . number_format($request->amount, 2) . " recorded successfully.");
     }
 
     public function receipt(Payment $payment)
@@ -219,41 +173,11 @@ class FeeController extends Controller
     {
         $classRooms = ClassRoom::where('is_active', true)->get();
         $feeTypes = FeeType::where('is_active', true)->get();
-        $students = Student::where('is_active', true)->orderBy('name')->get();
+        $students = Student::orderBy('name')->get();
 
-        $query = StudentFee::query();
+        $filters = $request->only(['student_id', 'class_id', 'fee_type_id', 'status']);
+        $data = $this->feeService->getReportData($filters);
 
-        // Filters
-        if ($request->student_id) {
-            $query->where('student_id', $request->student_id);
-        } elseif ($request->class_id) {
-            $query->whereHas('student', function ($q) use ($request) {
-                $q->where('class_id', $request->class_id);
-            });
-        }
-        if ($request->fee_type_id) {
-            $query->where('fee_type_id', $request->fee_type_id);
-        }
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        // Clone query for totals to avoid overriding get() later if used
-        $totalStats = (clone $query)->selectRaw('
-            SUM(amount) as total_expected, 
-            SUM(paid) as total_collected
-        ')->first();
-
-        $totalExpected = $totalStats->total_expected ?? 0;
-        $totalCollected = $totalStats->total_collected ?? 0;
-        $totalPending = $totalExpected - $totalCollected;
-
-        // Get Paginated Records
-        $studentFees = $query->with(['student.classRoom', 'feeType'])
-            ->orderBy('due_date', 'asc')
-            ->paginate(15)
-            ->withQueryString();
-
-        return view('admin.fees.report', compact('classRooms', 'feeTypes', 'students', 'studentFees', 'totalExpected', 'totalCollected', 'totalPending'));
+        return view('admin.fees.report', array_merge(compact('classRooms', 'feeTypes', 'students'), $data));
     }
 }

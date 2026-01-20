@@ -19,7 +19,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Role-based Dashboards
-Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Academic Routes
@@ -163,17 +163,26 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     Route::get('transport/routes/{transportRoute}/delete', [App\Http\Controllers\Admin\TransportController::class, 'confirmDeleteRoute'])->name('transport.routes.delete');
     Route::delete('transport/routes/{transportRoute}', [App\Http\Controllers\Admin\TransportController::class, 'destroyRoute'])->name('transport.routes.destroy');
 
+    // Hostel Management Routes
+    Route::resource('hostel', App\Http\Controllers\Admin\HostelController::class);
+
+    // Rooms
+    Route::post('hostel/rooms', [App\Http\Controllers\Admin\RoomController::class, 'store'])->name('hostel.rooms.store');
+    Route::get('hostel/rooms/{room}/edit', [App\Http\Controllers\Admin\RoomController::class, 'edit'])->name('hostel.rooms.edit'); // For modal or separate page
+    Route::put('hostel/rooms/{room}', [App\Http\Controllers\Admin\RoomController::class, 'update'])->name('hostel.rooms.update');
+    Route::delete('hostel/rooms/{room}', [App\Http\Controllers\Admin\RoomController::class, 'destroy'])->name('hostel.rooms.destroy');
+
+    // Allocations
+    Route::post('hostel/allocate', [App\Http\Controllers\Admin\AllocationController::class, 'store'])->name('hostel.allocate.store');
+    Route::post('hostel/vacate/{allocation}', [App\Http\Controllers\Admin\AllocationController::class, 'vacate'])->name('hostel.allocate.vacate');
+
     Route::resource('exam-schedule', App\Http\Controllers\Admin\ExamScheduleController::class)->only(['index']);
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
-    Route::get('/student/dashboard', function () {
-        return view('student.dashboard');
-    })->name('student.dashboard');
-    Route::get('/parent/dashboard', function () {
-        return view('parent.dashboard');
-    })->name('parent.dashboard');
+    Route::get('/student/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('student.dashboard')->middleware('role:student');
+    Route::get('/parent/dashboard', [App\Http\Controllers\Parent\DashboardController::class, 'index'])->name('parent.dashboard');
 });
 
 Route::middleware('auth')->group(function () {

@@ -8,10 +8,18 @@ use App\Models\ClassRoom;
 use App\Models\Exam;
 use App\Models\Mark;
 use App\Models\Student;
+use App\Services\GradingService;
 use Illuminate\Http\Request;
 
 class ReportCardController extends Controller
 {
+    protected GradingService $gradingService;
+
+    public function __construct(GradingService $gradingService)
+    {
+        $this->gradingService = $gradingService;
+    }
+
     public function index(Request $request)
     {
         $classes = ClassRoom::where('is_active', true)->get();
@@ -58,14 +66,17 @@ class ReportCardController extends Controller
             ->get();
 
         // Calculate Totals and Percentage
-        $totalMarksObtained = $marks->sum('marks_obtained');
-        $totalMaxMarks = $marks->count() * 100; // Assuming 100 per subject
-        $percentage = $totalMaxMarks > 0 ? ($totalMarksObtained / $totalMaxMarks) * 100 : 0;
+        $aggregates = $this->gradingService->calculateAggregates($marks);
+        $totalMarksObtained = $aggregates['total'];
+        $totalMaxMarks = $marks->count() * 100; // Still assuming 100 per subject for now
+        $percentage = $aggregates['average']; // Average approximates percentage if max marks are equal across subjects
 
-        // Determine Overall Grade (Simple Logic for now)
-        $grade = $this->calculateGrade($percentage);
+        // Determine Overall Grade (Using Service)
+        // Note: calculateGrade returns an array (grade, point, color, description) or null
+        $gradeData = $this->gradingService->calculateGrade($percentage);
+        $grade = $gradeData['grade'] ?? 'N/A';
 
-        // Attendance stats (for the exam period or academic year - simplifying to "Total Present" count for now)
+        // Attendance stats
         $totalAttendance = Attendance::where('student_id', $studentId)->count();
         $presentDays = Attendance::where('student_id', $studentId)->where('status', 'Present')->count();
         $attendancePercentage = $totalAttendance > 0 ? ($presentDays / $totalAttendance) * 100 : 0;
@@ -82,18 +93,5 @@ class ReportCardController extends Controller
             'presentDays',
             'totalAttendance'
         ));
-    }
-
-    private function calculateGrade($percentage)
-    {
-        if ($percentage >= 75)
-            return 'A';
-        if ($percentage >= 60)
-            return 'B';
-        if ($percentage >= 50)
-            return 'C';
-        if ($percentage >= 40)
-            return 'D';
-        return 'F';
     }
 }

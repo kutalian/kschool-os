@@ -17,7 +17,13 @@ class BookFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => $this->faker->sentence(3),
+            'author' => $this->faker->name(),
+            'isbn' => $this->faker->isbn13(),
+            'category_id' => \App\Models\BookCategory::factory(),
+            'quantity' => 10,
+            'available_copies' => 10,
+            'shelf_location' => 'A1',
         ];
     }
 }

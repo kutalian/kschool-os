@@ -31,9 +31,9 @@ class StudentFactory extends Factory
             'dob' => $this->faker->date('Y-m-d', '-15 years'),
             'gender' => $this->faker->randomElement(['Male', 'Female']),
             'nationality' => 'Nigerian',
+            'category' => 'General',
             'current_address' => $this->faker->address(),
             'permanent_address' => $this->faker->address(),
-            'is_active' => true,
         ];
     }
 }

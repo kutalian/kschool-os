@@ -10,16 +10,17 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('performance_reviews', function (Blueprint $table) {
-            $table->id();
-            $table->integer('staff_id'); // Matching previous int(11) structure
-            $table->foreign('staff_id')->references('id')->on('staff')->onDelete('cascade');
-            $table->date('review_date');
-            $table->integer('rating'); // 1-5
-            $table->text('comments')->nullable();
-            $table->foreignId('reviewer_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('performance_reviews')) {
+            Schema::create('performance_reviews', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('staff_id')->constrained('staff')->onDelete('cascade');
+                $table->date('review_date');
+                $table->integer('rating'); // 1-5
+                $table->text('comments')->nullable();
+                $table->foreignId('reviewer_id')->nullable()->constrained('users')->onDelete('set null');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

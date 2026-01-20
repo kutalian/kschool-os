@@ -10,15 +10,16 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('exam_periods', function (Blueprint $table) {
-            $table->id();
-            $table->integer('exam_id');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->string('name')->nullable(); // e.g. Period 1, Morning
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('exam_periods')) {
+            Schema::create('exam_periods', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('exam_id')->constrained()->onDelete('cascade');
+                $table->string('name')->nullable(); // e.g. Period 1, Morning
+                $table->time('start_time');
+                $table->time('end_time');
+                $table->timestamps();
+            });
+        }
     }
 
     /**

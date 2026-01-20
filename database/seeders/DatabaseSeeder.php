@@ -15,6 +15,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+        ]);
+
         // ... Phase 1 Seeding Commented Out ...
         // \App\Models\Staff::factory()->count(20)->create();
         // $classes = \App\Models\ClassRoom::factory()->count(10)->create();

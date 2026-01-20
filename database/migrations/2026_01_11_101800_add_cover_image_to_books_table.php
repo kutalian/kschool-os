@@ -10,9 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('books', function (Blueprint $table) {
-            $table->string('cover_image')->nullable()->after('author');
-        });
+        if (!Schema::hasColumn('books', 'cover_image')) {
+            Schema::table('books', function (Blueprint $table) {
+                $table->string('cover_image')->nullable()->after('author');
+            });
+        }
     }
 
     /**

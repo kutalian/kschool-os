@@ -10,9 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('students', function (Blueprint $table) {
-            $table->foreignId('transport_route_id')->nullable()->constrained('school_transport_routes')->nullOnDelete();
-        });
+        if (!Schema::hasColumn('students', 'transport_route_id')) {
+            Schema::table('students', function (Blueprint $table) {
+                $table->foreignId('transport_route_id')->nullable()->constrained('school_transport_routes')->nullOnDelete();
+            });
+        }
     }
 
     /**

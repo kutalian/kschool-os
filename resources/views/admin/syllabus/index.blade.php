@@ -31,7 +31,7 @@
                         <select name="class_id"
                             class="w-full rounded-lg border-gray-300 focus:border-blue-500 shadow-sm" required>
                             <option value="">-- Select Class --</option>
-                            @foreach($classes as $class)
+                            @foreach($classRooms as $class)
                                 <option value="{{ $class->id }}">{{ $class->name }}</option>
                             @endforeach
                         </select>
@@ -86,7 +86,7 @@
                     <form action="{{ route('syllabus.index') }}" method="GET" class="flex gap-2">
                         <select name="class_id" class="text-sm rounded border-gray-300" onchange="this.form.submit()">
                             <option value="">All Classes</option>
-                            @foreach($classes as $class)
+                            @foreach($classRooms as $class)
                                 <option value="{{ $class->id }}" {{ request('class_id') == $class->id ? 'selected' : '' }}>
                                     {{ $class->name }}
                                 </option>

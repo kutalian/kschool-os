@@ -7,12 +7,19 @@ use App\Models\Book;
 use App\Models\BookCategory;
 use App\Models\BookIssue;
 use App\Models\User;
+use App\Services\LibraryService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class LibraryController extends Controller
 {
+    protected LibraryService $libraryService;
+
+    public function __construct(LibraryService $libraryService)
+    {
+        $this->libraryService = $libraryService;
+    }
+
     public function index(Request $request)
     {
         $view = $request->get('view', 'books'); // 'books', 'categories', 'issued'
@@ -101,30 +108,16 @@ class LibraryController extends Controller
             'due_date' => 'required|date|after:today',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $book = Book::lockForUpdate()->find($validated['book_id']);
-
-            if ($book->available_copies < 1) {
-                // throw new \Exception('Book is not available currently.');
-                return redirect()->back()->with('error', 'Book is not available currently.');
-            }
-
-            BookIssue::create([
-                'book_id' => $validated['book_id'],
-                'user_id' => $validated['user_id'],
-                'issue_date' => Carbon::now(),
-                'due_date' => $validated['due_date'],
-                'status' => 'issued',
-            ]);
-
-            $book->decrement('available_copies');
-        });
-
-        if (session('error')) {
-            return redirect()->back()->with('error', session('error'));
+        try {
+            $this->libraryService->issueBook(
+                $validated['book_id'],
+                $validated['user_id'],
+                $validated['due_date']
+            );
+            return redirect()->back()->with('success', 'Book issued successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        return redirect()->back()->with('success', 'Book issued successfully.');
     }
 
     public function return_book(Request $request)
@@ -134,23 +127,21 @@ class LibraryController extends Controller
             'return_condition' => 'nullable|string|max:255',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $issue = BookIssue::lockForUpdate()->find($request->issue_id);
+        try {
+            $result = $this->libraryService->returnBook(
+                $request->issue_id,
+                $request->return_condition
+            );
 
-            if ($issue->status !== 'issued') {
-                return; // Already returned
+            $message = 'Book returned successfully.';
+            if ($result['fine'] > 0) {
+                $message .= " Fine applied: ₦{$result['fine']}.";
             }
 
-            $issue->update([
-                'status' => 'returned',
-                'return_date' => Carbon::now(),
-                'return_condition' => $request->return_condition,
-            ]);
-
-            $issue->book->increment('available_copies');
-        });
-
-        return redirect()->back()->with('success', 'Book returned successfully.');
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function edit(Book $book)

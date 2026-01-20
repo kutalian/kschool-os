@@ -25,7 +25,9 @@ class UserFactory extends Factory
     {
         return [
             'username' => $this->faker->unique()->userName() . rand(100, 999),
+            'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'email_verified_at' => now(),
             'role' => 'student',
             'password' => static::$password ??= Hash::make('password'),
             'is_active' => true,

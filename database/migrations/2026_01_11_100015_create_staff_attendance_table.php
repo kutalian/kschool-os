@@ -10,17 +10,19 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('staff_attendance', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('staff_id')->constrained('staff')->onDelete('cascade');
-            $table->date('date');
-            $table->enum('status', ['Present', 'Absent', 'Late', 'Half Day', 'Leave'])->default('Present');
-            $table->string('remarks')->nullable();
-            $table->timestamps();
+        if (!Schema::hasTable('staff_attendances')) {
+            Schema::create('staff_attendances', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('staff_id')->constrained('staff')->onDelete('cascade');
+                $table->date('date');
+                $table->enum('status', ['Present', 'Absent', 'Late', 'Half Day', 'Leave'])->default('Present');
+                $table->string('remarks')->nullable();
+                $table->timestamps();
 
-            // Prevent duplicate attendance for same staff on same day
-            $table->unique(['staff_id', 'date']);
-        });
+                // Prevent duplicate attendance for same staff on same day
+                $table->unique(['staff_id', 'date']);
+            });
+        }
     }
 
     /**

@@ -13,7 +13,7 @@ class SyllabusController extends Controller
 {
     public function index(Request $request)
     {
-        $classes = ClassRoom::all();
+        $classRooms = ClassRoom::all();
         $subjects = Subject::all();
 
         $query = Syllabus::with(['class_room', 'subject', 'uploader']);
@@ -27,7 +27,7 @@ class SyllabusController extends Controller
 
         $syllabi = $query->latest()->paginate(10);
 
-        return view('admin.syllabus.index', compact('syllabi', 'classes', 'subjects'));
+        return view('admin.syllabus.index', compact('syllabi', 'classRooms', 'subjects'));
     }
 
     public function store(Request $request)

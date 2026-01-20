@@ -10,21 +10,19 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('syllabi', function (Blueprint $table) {
-            $table->id();
-            $table->integer('class_id');
-            $table->integer('subject_id');
-            $table->string('title');
-            $table->text('description')->nullable();
-            $table->string('file_path');
-            $table->integer('created_by')->nullable();
+        if (!Schema::hasTable('syllabi')) {
+            Schema::create('syllabi', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+                $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
+                $table->string('title');
+                $table->text('description')->nullable();
+                $table->string('file_path');
+                $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
-
-            $table->timestamps();
-        });
+                $table->timestamps();
+            });
+        }
     }
 
     /**

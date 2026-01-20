@@ -10,8 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('transport_routes', function (Blueprint $table) {
-            if (!Schema::hasColumn('transport_routes', 'deleted_at')) {
+        Schema::table('school_transport_routes', function (Blueprint $table) {
+            if (!Schema::hasColumn('school_transport_routes', 'deleted_at')) {
                 $table->softDeletes();
             }
         });
@@ -28,7 +28,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('transport_routes', function (Blueprint $table) {
+        Schema::table('school_transport_routes', function (Blueprint $table) {
             $table->dropSoftDeletes();
         });
         Schema::table('vehicles', function (Blueprint $table) {

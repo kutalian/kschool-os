@@ -53,6 +53,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remark</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -61,6 +62,7 @@
                                 // Check if attendance already exists for this date
                                 $existing = \App\Models\Attendance::where('student_id', $student->id)->where('date', $date)->first();
                                 $status = $existing ? $existing->status : 'Present'; // Default to Present
+                                $remark = $existing ? $existing->remarks : '';
                             @endphp
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->admission_no }}</td>
@@ -84,6 +86,9 @@
                                             <span class="ml-2">Excused</span>
                                         </label>
                                     </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <input type="text" name="remarks[{{ $student->id }}]" value="{{ $remark }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm" placeholder="Optional remark">
                                 </td>
                             </tr>
                         @endforeach

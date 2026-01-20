@@ -10,14 +10,9 @@ return new class extends Migration {
         Schema::dropIfExists('timetables');
         Schema::create('timetables', function (Blueprint $table) {
             $table->id();
-            $table->integer('class_id');
-            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
-
-            $table->integer('subject_id');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-
-            $table->integer('teacher_id')->nullable();
-            $table->foreign('teacher_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
+            $table->foreignId('teacher_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('day'); // Monday, Tuesday...
             $table->integer('period_id'); // 1 to 8
             $table->timestamps();

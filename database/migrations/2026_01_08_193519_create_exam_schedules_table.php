@@ -13,11 +13,9 @@ return new class extends Migration {
         Schema::dropIfExists('exam_schedules');
         Schema::create('exam_schedules', function (Blueprint $table) {
             $table->id();
-            $table->integer('exam_id');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->integer('class_id'); // Using integer as per existing schema pattern
-            $table->integer('subject_id'); // Using integer as per existing schema pattern
-            $table->date('date');
+            $table->foreignId('exam_id')->constrained('exams')->onDelete('cascade');
+            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->time('start_time');
             $table->time('end_time')->nullable();
             $table->string('room_number')->nullable();

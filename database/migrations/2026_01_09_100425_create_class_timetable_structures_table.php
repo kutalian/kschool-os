@@ -10,23 +10,25 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('class_timetable_days', function (Blueprint $table) {
-            $table->id();
-            $table->integer('class_id');
-            $table->string('name');
-            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('class_timetable_days')) {
+            Schema::create('class_timetable_days', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+                $table->string('name');
+                $table->timestamps();
+            });
+        }
 
-        Schema::create('class_timetable_periods', function (Blueprint $table) {
-            $table->id();
-            $table->integer('class_id');
-            $table->string('name')->nullable();
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->foreign('class_id')->references('id')->on('classes')->onDelete('cascade');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('class_timetable_periods')) {
+            Schema::create('class_timetable_periods', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+                $table->string('name')->nullable();
+                $table->time('start_time');
+                $table->time('end_time');
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

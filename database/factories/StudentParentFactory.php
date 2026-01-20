@@ -24,10 +24,8 @@ class StudentParentFactory extends Factory
             'address' => $this->faker->address(),
             'father_name' => $this->faker->name('male'),
             'father_phone' => $this->faker->phoneNumber(),
-            'father_occupation' => $this->faker->jobTitle(),
             'mother_name' => $this->faker->name('female'),
             'mother_phone' => $this->faker->phoneNumber(),
-            'mother_occupation' => $this->faker->jobTitle(),
             'is_active' => true,
         ];
     }

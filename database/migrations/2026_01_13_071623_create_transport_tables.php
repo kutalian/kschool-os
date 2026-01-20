@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->softDeletes();
         });
 
-        Schema::create('transport_routes', function (Blueprint $table) {
+        Schema::create('school_transport_routes', function (Blueprint $table) {
             $table->id();
             $table->string('title'); // e.g., "Route 1 - North City"
             $table->string('start_point');
@@ -39,7 +39,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('transport_routes');
+        Schema::dropIfExists('school_transport_routes');
         Schema::dropIfExists('vehicles');
     }
 };

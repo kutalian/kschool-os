@@ -6,10 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payroll;
 use App\Models\Staff;
-use App\Models\StaffAttendance;
+use App\Services\PayrollService;
 
 class PayrollController extends Controller
 {
+    protected PayrollService $payrollService;
+
+    public function __construct(PayrollService $payrollService)
+    {
+        $this->payrollService = $payrollService;
+    }
+
     public function index(Request $request)
     {
         $month = $request->input('month', date('Y-m'));
@@ -33,42 +40,13 @@ class PayrollController extends Controller
         ]);
 
         $month = $request->month;
-        $staffMembers = Staff::where('is_active', true)->get();
 
-        // Parse Year and Month
-        list($year, $monthNum) = explode('-', $month);
-
-        foreach ($staffMembers as $staff) {
-            // Count absences
-            $absentDays = StaffAttendance::where('staff_id', $staff->id)
-                ->whereYear('date', $year)
-                ->whereMonth('date', $monthNum)
-                ->whereIn('status', ['Absent', 'Leave']) // Assuming Leave is unpaid
-                ->count();
-
-            // Calculate Deduction: (Basic / 30) * Absent Days
-            $basicSalary = $staff->basic_salary ?? 0;
-            $dailyRate = $basicSalary > 0 ? $basicSalary / 30 : 0;
-            $deduction = $dailyRate * $absentDays;
-
-            // Calculate Net
-            $netSalary = $basicSalary - $deduction; // + Allowances if any, currently 0
-
-            Payroll::updateOrCreate(
-                ['staff_id' => $staff->id, 'month' => $month],
-                [
-                    'basic_salary' => $basicSalary,
-                    'deduction' => round($deduction, 2),
-                    'allowance' => 0,
-                    'net_salary' => round($netSalary > 0 ? $netSalary : 0, 2),
-                    'status' => 'Pending',
-                    'payment_date' => now(),
-                ]
-            );
-        }
+        // Use Service for Bulk Generation
+        // This keeps the controller clean and the logic reusable
+        $count = $this->payrollService->generateBulkPayroll($month);
 
         return redirect()->route('payroll.index', ['month' => $month])
-            ->with('success', 'Payroll generated successfully for ' . $month);
+            ->with('success', "Payroll generated successfully for {$count} staff members for {$month}");
     }
 
     public function show(Payroll $payroll)
