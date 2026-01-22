@@ -34,7 +34,12 @@
                             required>
                             <option value="">Select Parent</option>
                             @foreach($parents as $parent)
-                                <option value="{{ $parent->id }}">{{ $parent->father_name }} / {{ $parent->mother_name }}
+                                <option value="{{ $parent->id }}">
+                                    @if($parent->father_name || $parent->mother_name)
+                                        {{ $parent->father_name }} {{ $parent->mother_name ? '/ ' . $parent->mother_name : '' }}
+                                    @else
+                                        {{ $parent->name }}
+                                    @endif
                                 </option>
                             @endforeach
                         </select>
