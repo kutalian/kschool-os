@@ -191,6 +191,35 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
         'inventory' => 'item'
     ]);
 
+    // Student Services Routes
+    Route::group(['prefix' => 'student-services', 'as' => 'student-services.'], function () {
+        // This group prefix is optional but creating a namespace/folder structure helps
+    });
+
+    Route::get('health-records/{health_record}/delete', [App\Http\Controllers\Admin\StudentServices\HealthRecordController::class, 'confirmDelete'])->name('health-records.delete');
+    Route::resource('health-records', App\Http\Controllers\Admin\StudentServices\HealthRecordController::class);
+
+    Route::get('vaccinations/{vaccination}/delete', [App\Http\Controllers\Admin\StudentServices\VaccinationController::class, 'confirmDelete'])->name('vaccinations.delete');
+    Route::resource('vaccinations', App\Http\Controllers\Admin\StudentServices\VaccinationController::class);
+
+    Route::get('disciplinary-records/{disciplinary_record}/delete', [App\Http\Controllers\Admin\StudentServices\DisciplinaryController::class, 'confirmDelete'])->name('disciplinary-records.delete');
+    Route::resource('disciplinary-records', App\Http\Controllers\Admin\StudentServices\DisciplinaryController::class);
+
+    Route::get('behavior-points/{behavior_point}/delete', [App\Http\Controllers\Admin\StudentServices\BehaviorController::class, 'confirmDelete'])->name('behavior-points.delete');
+    Route::resource('behavior-points', App\Http\Controllers\Admin\StudentServices\BehaviorController::class);
+
+    // Communication Routes
+    Route::resource('messages', App\Http\Controllers\Admin\Communication\MessageController::class);
+    Route::resource('events', App\Http\Controllers\Admin\Communication\EventController::class);
+    Route::resource('notices', App\Http\Controllers\Admin\Communication\NoticeController::class);
+    Route::resource('announcements', App\Http\Controllers\Admin\Communication\AnnouncementController::class);
+    Route::resource('complaints', App\Http\Controllers\Admin\Communication\ComplaintController::class);
+    Route::resource('parent-teacher-meetings', App\Http\Controllers\Admin\Communication\ParentTeacherMeetingController::class);
+    Route::resource('forum', App\Http\Controllers\Admin\Communication\ForumController::class);
+    Route::post('forum/{post}/comment', [App\Http\Controllers\Admin\Communication\ForumController::class, 'storeComment'])->name('forum.comments.store');
+    Route::post('forum/{post}/like', [App\Http\Controllers\Admin\Communication\ForumController::class, 'toggleLike'])->name('forum.like');
+    Route::post('forum/poll/{poll}/vote', [App\Http\Controllers\Admin\Communication\ForumController::class, 'vote'])->name('forum.poll.vote');
+
     // Certificate Routes
     Route::get('certificates/{certificate}/delete', [App\Http\Controllers\Admin\CertificateController::class, 'confirmDelete'])->name('certificates.delete');
     Route::resource('certificates', App\Http\Controllers\Admin\CertificateController::class)->parameters([

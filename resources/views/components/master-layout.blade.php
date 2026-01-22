@@ -132,6 +132,38 @@
                         </div>
                     </div>
 
+                    <!-- Student Services Group -->
+                    <div x-data="{ open: {{ request()->routeIs('health-records.*', 'vaccinations.*', 'disciplinary-records.*', 'behavior-points.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-heartbeat w-6"></i> Student Services
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('health-records.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('health-records.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Health Records
+                            </a>
+                            <a href="{{ route('vaccinations.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('vaccinations.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Vaccinations
+                            </a>
+                            <a href="{{ route('disciplinary-records.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('disciplinary-records.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Disciplinary
+                            </a>
+                            <a href="{{ route('behavior-points.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('behavior-points.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Behavior Points
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Examinations Group -->
                     <div x-data="{ open: {{ request()->routeIs('exams.*', 'exam-schedule.*', 'marks.*', 'reports.*', 'grades.*') ? 'true' : 'false' }} }"
                         class="mt-1">
@@ -268,6 +300,50 @@
                             <a href="{{ route('payroll.index') }}"
                                 class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('payroll.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
                                 Payroll
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Communication & Engagement Group -->
+                    <div x-data="{ open: {{ request()->routeIs('messages.*', 'events.*', 'notices.*', 'announcements.*', 'complaints.*', 'parent-teacher-meetings.*', 'forum.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-comments w-6"></i> Communication
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('messages.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('messages.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Messages
+                            </a>
+                            <a href="{{ route('notices.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('notices.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Notices
+                            </a>
+                            <a href="{{ route('events.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('events.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Events
+                            </a>
+                            <a href="{{ route('announcements.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('announcements.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Announcements
+                            </a>
+                            <a href="{{ route('complaints.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('complaints.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Complaints
+                            </a>
+                            <a href="{{ route('parent-teacher-meetings.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('parent-teacher-meetings.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                PTM
+                            </a>
+                            <a href="{{ route('forum.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('forum.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Forum
                             </a>
                         </div>
                     </div>
