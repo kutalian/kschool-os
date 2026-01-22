@@ -28,8 +28,14 @@ class LibraryService
                 throw new \Exception("Book is not available currently.");
             }
 
-            // Optional: Check if user already has an active issue of this book?
-            // Skipping for now to keep flexible, but assuming logic allows multiple copies if needed.
+            // Member limit check
+            $activeIssues = BookIssue::where('user_id', $userId)
+                ->where('status', 'issued')
+                ->count();
+
+            if ($activeIssues >= 5) { // Limit ideally simpler to configure
+                throw new \Exception("User has reached the maximum borrowing limit of 5 books.");
+            }
 
             $issue = BookIssue::create([
                 'book_id' => $bookId,

@@ -146,7 +146,8 @@
                                             @foreach($marks as $mark)
                                                 <tr>
                                                     <td class="px-4 py-2 text-sm text-gray-900">
-                                                        {{ $mark->subject->name ?? 'Unknown' }}</td>
+                                                        {{ $mark->subject->name ?? 'Unknown' }}
+                                                    </td>
                                                     <td class="px-4 py-2 text-center text-sm font-bold text-gray-900">
                                                         {{ $mark->marks_obtained }} <span class="text-gray-400 font-normal">/
                                                             {{ $mark->total_marks }}</span>
@@ -154,7 +155,7 @@
                                                     <td class="px-4 py-2 text-center">
                                                         <span
                                                             class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                                        {{ $mark->grade === 'F' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                                                                    {{ $mark->grade === 'F' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                                             {{ $mark->grade }}
                                                         </span>
                                                     </td>
@@ -171,6 +172,114 @@
                             <p>No exam results found for this student.</p>
                         </div>
                     @endif
+                </div>
+
+                <!-- Financial Overview -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex justify-between items-center">
+                        <span>Financial Overview</span>
+                        @php
+                            $outstanding = $student->fees->where('status', '!=', 'paid')->sum('amount');
+                            $collected = $student->fees->sum(function ($fee) {
+                                return $fee->payments->sum('amount');
+                            });
+                        @endphp
+                        <span
+                            class="text-sm font-normal {{ $outstanding > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600' }} py-1 px-3 rounded-full">
+                            Due: ${{ number_format($outstanding, 2) }}
+                        </span>
+                    </h3>
+
+                    <div class="space-y-6">
+                        <!-- Outstanding Bills -->
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="bg-red-50 px-4 py-2 font-semibold text-red-800 flex justify-between">
+                                <span>Outstanding Bills</span>
+                            </div>
+                            @if($student->fees->where('status', '!=', 'paid')->count() > 0)
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fee
+                                                Type</th>
+                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                                Due Date</th>
+                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                                Amount</th>
+                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                                Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 bg-white">
+                                        @foreach($student->fees->where('status', '!=', 'paid') as $fee)
+                                            <tr>
+                                                <td class="px-4 py-2 text-sm text-gray-900">{{ $fee->feeType->name ?? 'Fee' }}
+                                                </td>
+                                                <td class="px-4 py-2 text-center text-sm text-gray-500">
+                                                    {{ \Carbon\Carbon::parse($fee->due_date)->format('M d, Y') }}</td>
+                                                <td class="px-4 py-2 text-right text-sm font-bold text-gray-900">
+                                                    ${{ number_format($fee->amount, 2) }}</td>
+                                                <td class="px-4 py-2 text-center">
+                                                    <span
+                                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                        {{ ucfirst($fee->status) }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @else
+                                <div class="p-4 text-center text-gray-500 text-sm">No outstanding bills.</div>
+                            @endif
+                        </div>
+
+                        <!-- Payment History -->
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="bg-blue-50 px-4 py-2 font-semibold text-blue-800 flex justify-between">
+                                <span>Payment History</span>
+                                <span
+                                    class="text-xs font-normal bg-white text-blue-600 px-2 py-0.5 rounded shadow-sm">Total
+                                    Paid: ${{ number_format($collected, 2) }}</span>
+                            </div>
+                            @php
+                                $allPayments = $student->fees->flatMap(function ($fee) {
+                                    return $fee->payments; })->sortByDesc('payment_date');
+                            @endphp
+                            @if($allPayments->count() > 0)
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date
+                                            </th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fee
+                                            </th>
+                                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                                                Amount</th>
+                                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                                                Method</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 bg-white">
+                                        @foreach($allPayments as $payment)
+                                            <tr>
+                                                <td class="px-4 py-2 text-sm text-gray-500">
+                                                    {{ \Carbon\Carbon::parse($payment->payment_date)->format('M d, Y') }}</td>
+                                                <td class="px-4 py-2 text-sm text-gray-900">
+                                                    {{ $payment->studentFee->feeType->name ?? 'Fee' }}</td>
+                                                <td class="px-4 py-2 text-right text-sm font-bold text-green-600">
+                                                    ${{ number_format($payment->amount, 2) }}</td>
+                                                <td class="px-4 py-2 text-center text-sm text-gray-500 capitalize">
+                                                    {{ $payment->payment_method }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            @else
+                                <div class="p-4 text-center text-gray-500 text-sm">No payment history found.</div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
 
             </div>

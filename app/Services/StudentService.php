@@ -33,10 +33,13 @@ class StudentService
             $username = $admissionNo;
 
             // Create Student User
+            // Create Student User
+            $email = !empty($data['email']) ? $data['email'] : strtolower($username) . '@student.school.erp';
+
             $studentUser = User::create([
                 'username' => $username,
                 'name' => $data['first_name'] . ' ' . $data['last_name'],
-                'email' => $data['email'] ?? null,
+                'email' => $email,
                 'password' => Hash::make('password'), // Consider generating random password
                 'role' => 'student',
             ]);
@@ -103,8 +106,9 @@ class StudentService
         DB::transaction(function () use ($student, $data) {
             // Update User 
             if ($student->user) {
+                $email = !empty($data['email']) ? $data['email'] : strtolower($student->user->username) . '@student.school.erp';
                 $student->user->update([
-                    'email' => $data['email'] ?? null,
+                    'email' => $email,
                 ]);
             }
 

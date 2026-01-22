@@ -9,6 +9,13 @@ use Illuminate\Http\Request;
 
 class StudentPromotionController extends Controller
 {
+    protected $gradingService;
+
+    public function __construct(\App\Services\GradingService $gradingService)
+    {
+        $this->gradingService = $gradingService;
+    }
+
     public function index(Request $request)
     {
         $classRooms = ClassRoom::where('is_active', true)->get();
@@ -17,8 +24,16 @@ class StudentPromotionController extends Controller
         if ($request->has('source_class_id') && $request->source_class_id) {
             $students = Student::where('class_id', $request->source_class_id)
                 ->where('is_active', true)
+                ->with('marks') // Eager load marks for calculation
                 ->orderBy('name')
                 ->get();
+
+            foreach ($students as $student) {
+                // Calculate average and result
+                $stats = $this->gradingService->calculateAggregates($student->marks);
+                $student->academic_average = $stats['average'];
+                $student->academic_result = $this->gradingService->determineResult($stats['average']);
+            }
         }
 
         return view('admin.students.promotion.index', compact('classRooms', 'students'));

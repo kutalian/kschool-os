@@ -1396,6 +1396,89 @@ CREATE TABLE `certificates` (
   CONSTRAINT `fk_certificates_issued_by` FOREIGN KEY (`issued_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Table: visitors
+CREATE TABLE `visitors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `purpose` varchar(255) NOT NULL,
+  `person_to_meet` varchar(100) DEFAULT NULL,
+  `check_in` datetime NOT NULL DEFAULT current_timestamp(),
+  `check_out` datetime DEFAULT NULL,
+  `id_proof` varchar(100) DEFAULT NULL,
+  `visitor_card_no` varchar(50) DEFAULT NULL,
+  `note` text DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_check_in` (`check_in`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `fk_visitors_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Table: admission_enquiries
+CREATE TABLE `admission_enquiries` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `class_applying_for` varchar(50) DEFAULT NULL,
+  `no_of_children` int(11) DEFAULT 1,
+  `description` text DEFAULT NULL,
+  `status` enum('Pending','Contacted','Visited','Admitted','Rejected') NOT NULL DEFAULT 'Pending',
+  `assigned_to` int(11) DEFAULT NULL,
+  `date` date NOT NULL DEFAULT curdate(),
+  `next_follow_up` date DEFAULT NULL,
+  `source` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_date` (`date`),
+  KEY `assigned_to` (`assigned_to`),
+  CONSTRAINT `fk_enquiries_assigned_to` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Table: phone_call_logs
+CREATE TABLE `phone_call_logs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `phone` varchar(20) NOT NULL,
+  `date` datetime NOT NULL DEFAULT current_timestamp(),
+  `description` text DEFAULT NULL,
+  `call_type` enum('Incoming','Outgoing') NOT NULL DEFAULT 'Incoming',
+  `duration` varchar(20) DEFAULT NULL,
+  `follow_up_date` date DEFAULT NULL,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_date` (`date`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `fk_calls_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Table: postal_records
+CREATE TABLE `postal_records` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `type` enum('Dispatch','Receive') NOT NULL DEFAULT 'Receive',
+  `reference_no` varchar(100) DEFAULT NULL,
+  `sender_name` varchar(100) NOT NULL,
+  `receiver_name` varchar(100) DEFAULT NULL,
+  `address` text DEFAULT NULL,
+  `date` date NOT NULL DEFAULT curdate(),
+  `note` text DEFAULT NULL,
+  `attachment` varchar(255) DEFAULT NULL,
+  `is_confidential` tinyint(1) NOT NULL DEFAULT 0,
+  `created_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_type` (`type`),
+  KEY `idx_date` (`date`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `fk_postal_created_by` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- ========================================
 -- DOCUMENTS & MEDIA
 -- ========================================
@@ -1717,15 +1800,16 @@ INSERT INTO `permissions` (`permission_name`, `module`, `action`, `description`)
 
 -- Insert default timetable periods
 INSERT INTO `timetable_periods` (`name`, `start_time`, `end_time`, `type`, `display_order`) VALUES
-('Period 1', '08:00:00', '08:45:00', 'class', 1),
-('Period 2', '08:45:00', '09:30:00', 'class', 2),
-('Period 3', '09:30:00', '10:15:00', 'class', 3),
-('Break', '10:15:00', '10:30:00', 'break', 4),
-('Period 4', '10:30:00', '11:15:00', 'class', 5),
-('Period 5', '11:15:00', '12:00:00', 'class', 6),
-('Lunch Break', '12:00:00', '13:00:00', 'break', 7),
-('Period 6', '13:00:00', '13:45:00', 'class', 8),
-('Period 7', '13:45:00', '14:30:00', 'class', 9);
+('Period 1', '08:00:00', '08:40:00', 'class', 1),
+('Period 2', '08:40:00', '09:20:00', 'class', 2),
+('Period 3', '09:20:00', '10:00:00', 'class', 3),
+('Short Break', '10:00:00', '10:15:00', 'break', 4),
+('Period 4', '10:15:00', '10:55:00', 'class', 5),
+('Period 5', '10:55:00', '11:30:00', 'class', 6),
+('Lunch Break', '11:30:00', '12:00:00', 'break', 7),
+('Period 6', '12:00:00', '12:40:00', 'class', 8),
+('Period 7', '12:40:00', '13:20:00', 'class', 9),
+('Period 8', '13:20:00', '14:00:00', 'class', 10);
 
 -- Insert default fee types
 INSERT INTO `fee_types` (`name`, `amount`, `description`, `frequency`, `is_active`) VALUES

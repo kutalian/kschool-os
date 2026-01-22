@@ -66,7 +66,7 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
-        $student->load(['class_room', 'parent', 'user', 'attendance', 'marks.exam', 'marks.subject']);
+        $student->load(['class_room', 'parent', 'user', 'attendance', 'marks.exam', 'marks.subject', 'fees.payments', 'fees.feeType']);
 
         $totalDays = $student->attendance->count();
         $presentDays = $student->attendance->where('status', 'Present')->count();

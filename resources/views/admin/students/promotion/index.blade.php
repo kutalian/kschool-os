@@ -127,7 +127,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admission No
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Gender</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Performance</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -142,7 +142,15 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {{ $student->name }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->gender }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex flex-col">
+                                            <span class="font-bold">{{ $student->academic_average }}%</span>
+                                            <span
+                                                class="text-xs {{ $student->academic_result === 'PASSED' ? 'text-green-600' : 'text-red-600' }} font-bold">
+                                                {{ $student->academic_result }}
+                                            </span>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>

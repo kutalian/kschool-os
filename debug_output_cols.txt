@@ -1,0 +1,118 @@
+Columns in student_fees:
+Array
+(
+    [0] => id
+    [1] => student_id
+    [2] => fee_type_id
+    [3] => amount
+    [4] => due_date
+    [5] => academic_year
+    [6] => term
+    [7] => status
+    [8] => created_at
+    [9] => updated_at
+)
+Starting query...
+Result (amount only):
+App\Models\StudentFee Object
+(
+    [connection:protected] => mysql
+    [table:protected] => student_fees
+    [primaryKey:protected] => id
+    [keyType:protected] => int
+    [incrementing] => 1
+    [with:protected] => Array
+        (
+        )
+
+    [withCount:protected] => Array
+        (
+        )
+
+    [preventsLazyLoading] => 
+    [perPage:protected] => 15
+    [exists] => 1
+    [wasRecentlyCreated] => 
+    [escapeWhenCastingToString:protected] => 
+    [attributes:protected] => Array
+        (
+            [total_expected] => 20000.00
+        )
+
+    [original:protected] => Array
+        (
+            [total_expected] => 20000.00
+        )
+
+    [changes:protected] => Array
+        (
+        )
+
+    [previous:protected] => Array
+        (
+        )
+
+    [casts:protected] => Array
+        (
+        )
+
+    [classCastCache:protected] => Array
+        (
+        )
+
+    [attributeCastCache:protected] => Array
+        (
+        )
+
+    [dateFormat:protected] => 
+    [appends:protected] => Array
+        (
+        )
+
+    [dispatchesEvents:protected] => Array
+        (
+        )
+
+    [observables:protected] => Array
+        (
+        )
+
+    [relations:protected] => Array
+        (
+        )
+
+    [touches:protected] => Array
+        (
+        )
+
+    [relationAutoloadCallback:protected] => 
+    [relationAutoloadContext:protected] => 
+    [timestamps] => 
+    [usesUniqueIds] => 
+    [hidden:protected] => Array
+        (
+        )
+
+    [visible:protected] => Array
+        (
+        )
+
+    [fillable:protected] => Array
+        (
+            [0] => student_id
+            [1] => fee_type_id
+            [2] => amount
+            [3] => paid
+            [4] => discount
+            [5] => status
+            [6] => due_date
+            [7] => academic_year
+            [8] => term
+        )
+
+    [guarded:protected] => Array
+        (
+            [0] => *
+        )
+
+)

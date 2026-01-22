@@ -10,10 +10,17 @@ use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(\App\Services\AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
     public function index()
     {
         // For now, list recent attendance records
-        $attendance = Attendance::with('student.class_room')->latest()->paginate(20);
+        $attendance = Attendance::with('student.class_room')->orderBy('date', 'desc')->paginate(20);
         return view('admin.attendance.index', compact('attendance'));
     }
 
@@ -47,18 +54,13 @@ class AttendanceController extends Controller
             'remarks.*' => 'nullable|string|max:255',
         ]);
 
-        $date = $request->date;
-        $attendanceData = $request->attendance;
-        $remarksData = $request->input('remarks', []);
+        $count = $this->attendanceService->recordStudentAttendance(
+            $request->class_id,
+            $request->date,
+            $request->attendance,
+            $request->input('remarks', [])
+        );
 
-        foreach ($attendanceData as $studentId => $status) {
-            $remark = $remarksData[$studentId] ?? null;
-            Attendance::updateOrCreate(
-                ['student_id' => $studentId, 'date' => $date],
-                ['status' => $status, 'remarks' => $remark]
-            );
-        }
-
-        return redirect()->route('attendance.index')->with('success', 'Attendance recorded successfully.');
+        return redirect()->route('attendance.index')->with('success', "Attendance recorded successfully for {$count} students.");
     }
 }

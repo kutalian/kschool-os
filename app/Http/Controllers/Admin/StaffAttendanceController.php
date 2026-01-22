@@ -9,6 +9,13 @@ use Illuminate\Http\Request;
 
 class StaffAttendanceController extends Controller
 {
+    protected $attendanceService;
+
+    public function __construct(\App\Services\AttendanceService $attendanceService)
+    {
+        $this->attendanceService = $attendanceService;
+    }
+
     public function index(Request $request)
     {
         $date = $request->input('date', date('Y-m-d'));
@@ -46,21 +53,13 @@ class StaffAttendanceController extends Controller
             'attendance.*' => 'in:Present,Absent,Late,Half Day,Leave',
         ]);
 
-        $date = $request->date;
-        $attendanceData = $request->attendance;
-        $remarksData = $request->remarks ?? [];
+        $this->attendanceService->recordStaffAttendance(
+            $request->date,
+            $request->attendance,
+            $request->input('remarks', [])
+        );
 
-        foreach ($attendanceData as $staffId => $status) {
-            StaffAttendance::updateOrCreate(
-                ['staff_id' => $staffId, 'date' => $date],
-                [
-                    'status' => $status,
-                    'remarks' => $remarksData[$staffId] ?? null
-                ]
-            );
-        }
-
-        return redirect()->route('staff-attendance.index', ['date' => $date])
+        return redirect()->route('staff-attendance.index', ['date' => $request->date])
             ->with('success', 'Staff attendance updated successfully.');
     }
 }

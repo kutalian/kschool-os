@@ -66,6 +66,11 @@ class Student extends Model implements \OwenIt\Auditing\Contracts\Auditable
     {
         return $this->belongsTo(TransportRoute::class);
     }
+
+    public function fees()
+    {
+        return $this->hasMany(StudentFee::class);
+    }
     public function getFirstNameAttribute()
     {
         $parts = explode(' ', $this->name);

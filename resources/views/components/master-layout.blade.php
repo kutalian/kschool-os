@@ -200,6 +200,38 @@
                         </div>
                     </div>
 
+                    <!-- Front Office Group -->
+                    <div x-data="{ open: {{ request()->routeIs('visitors.*', 'admission-enquiries.*', 'phone-call-logs.*', 'postal-records.*') ? 'true' : 'false' }} }"
+                        class="mt-1">
+                        <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
+                            :class="open ? 'bg-slate-800/50' : ''">
+                            <span class="flex items-center">
+                                <i class="fas fa-building w-6"></i> Front Office
+                            </span>
+                            <i :class="open ? 'rotate-180' : ''"
+                                class="fas fa-chevron-down text-xs transition-transform duration-200"></i>
+                        </button>
+                        <div x-show="open" x-collapse class="pl-4 mt-1 space-y-1">
+                            <a href="{{ route('visitors.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('visitors.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Visitor Book
+                            </a>
+                            <a href="{{ route('admission-enquiries.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('admission-enquiries.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Admission Enquiries
+                            </a>
+                            <a href="{{ route('phone-call-logs.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('phone-call-logs.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Phone Call Logs
+                            </a>
+                            <a href="{{ route('postal-records.index') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('postal-records.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Postal Records
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Financial Group -->
                     <div x-data="{ open: {{ request()->routeIs('fees.*', 'expenses.*', 'payroll.*') ? 'true' : 'false' }} }"
                         class="mt-1">
@@ -250,6 +282,18 @@
                     <a href="{{ route('library.index') }}"
                         class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('library.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-book-reader w-6"></i> Library
+                    </a>
+
+                    <!-- Inventory Link (Standalone) -->
+                    <a href="{{ route('inventory.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('inventory.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-boxes w-6"></i> Inventory
+                    </a>
+
+                    <!-- Certificates Link (Standalone) -->
+                    <a href="{{ route('certificates.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('certificates.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-certificate w-6"></i> Certificates
                     </a>
 
                 @endif

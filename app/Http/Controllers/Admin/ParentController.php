@@ -51,6 +51,7 @@ class ParentController extends Controller
         // Create User for Parent
         $user = User::create([
             'username' => 'parent.' . strtolower(Str::random(6)),
+            'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make('password'),
             'role' => 'parent',
@@ -103,7 +104,10 @@ class ParentController extends Controller
         ]);
 
         if ($parent->user) {
-            $parent->user->update(['email' => $validated['email']]);
+            $parent->user->update([
+                'name' => $validated['name'],
+                'email' => $validated['email']
+            ]);
         }
 
         $parent->update($validated);

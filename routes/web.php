@@ -176,7 +176,27 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::post('hostel/allocate', [App\Http\Controllers\Admin\AllocationController::class, 'store'])->name('hostel.allocate.store');
     Route::post('hostel/vacate/{allocation}', [App\Http\Controllers\Admin\AllocationController::class, 'vacate'])->name('hostel.allocate.vacate');
 
+    // Front Office Routes
+    Route::resource('visitors', App\Http\Controllers\Admin\FrontOffice\VisitorController::class);
+    Route::resource('admission-enquiries', App\Http\Controllers\Admin\FrontOffice\AdmissionEnquiryController::class);
+    Route::resource('phone-call-logs', App\Http\Controllers\Admin\FrontOffice\PhoneCallLogController::class);
+    Route::resource('postal-records', App\Http\Controllers\Admin\FrontOffice\PostalRecordController::class);
+
     Route::resource('exam-schedule', App\Http\Controllers\Admin\ExamScheduleController::class)->only(['index']);
+
+    // Inventory Routes
+    Route::get('inventory/movement/{item}', [App\Http\Controllers\Admin\InventoryController::class, 'addMovement'])->name('inventory.movement');
+    Route::post('inventory/movement/{item}', [App\Http\Controllers\Admin\InventoryController::class, 'storeMovement'])->name('inventory.movement.store');
+    Route::resource('inventory', App\Http\Controllers\Admin\InventoryController::class)->parameters([
+        'inventory' => 'item'
+    ]);
+
+    // Certificate Routes
+    Route::get('certificates/{certificate}/delete', [App\Http\Controllers\Admin\CertificateController::class, 'confirmDelete'])->name('certificates.delete');
+    Route::resource('certificates', App\Http\Controllers\Admin\CertificateController::class)->parameters([
+        'certificates' => 'certificate'
+    ]);
+
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
