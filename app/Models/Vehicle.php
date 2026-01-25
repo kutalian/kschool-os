@@ -19,7 +19,14 @@ class Vehicle extends Model
         'driver_license',
         'driver_phone',
         'status',
+        'user_id',
     ];
+
+    public function driver()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
 
     public function routes()
     {

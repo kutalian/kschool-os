@@ -1,0 +1,56 @@
+{
+    "name": "TalentUpgrade",
+    "directory": "talentupgrade",
+    "version": "1.1.0",
+    "author": "Kutalian",
+    "description": "A vibrant and modern theme for educational institutions with a focus on kindergartens and primary schools.",
+    "settings": {
+        "identity": {
+            "label": "Site Identity",
+            "fields": {
+                "site_title": { "type": "text", "label": "School Name", "default": "Kschool OS" },
+                "tagline": { "type": "text", "label": "Tagline", "default": "Best School For Your Kids" },
+                "logo_url": { "type": "image", "label": "Brand Logo" }
+            }
+        },
+        "colors": {
+            "label": "Color Palette",
+            "fields": {
+                "primary": { "type": "color", "label": "Primary Color", "default": "#17a2b8" },
+                "secondary": { "type": "color", "label": "Secondary Color", "default": "#00394f" },
+                "accent": { "type": "color", "label": "Accent Color", "default": "#ff6600" },
+                "background": { "type": "color", "label": "Page Background", "default": "#ffffff" },
+                "text": { "type": "color", "label": "Text Color", "default": "#444444" }
+            }
+        },
+        "typography": {
+            "label": "Typography",
+            "fields": {
+                "heading_font": { "type": "text", "label": "Heading Font", "default": "Handlee" },
+                "body_font": { "type": "text", "label": "Body Font", "default": "Inter" }
+            }
+        },
+        "footer": {
+            "label": "Footer Settings",
+            "fields": {
+                "footer_text": { "type": "textarea", "label": "Footer Copyright Text", "default": "© 2026 Kschool OS. All rights reserved." },
+                "social_links": { "type": "checkbox", "label": "Show Social Links", "default": true }
+            }
+        }
+    },
+    "sections": {
+        "hero": { "label": "Hero Section", "fields": ["title", "subtitle", "content", "image", "action_text", "action_url"] },
+        "facilities": { "label": "Facilities Highlights", "fields": ["title", "content"] },
+        "about": { "label": "About Us Introduction", "fields": ["title", "subtitle", "content", "image", "action_text", "action_url"] },
+        "cta": { "label": "Call To Action", "fields": ["title", "content", "action_text", "action_url"] },
+        "classes": { "label": "Our Classes Overview", "fields": ["title", "content"] },
+        "registration": { "label": "Registration Info", "fields": ["title", "content"] },
+        "teachers": { "label": "Our Staff Section", "fields": ["title"] }
+    },
+    "pages": {
+        "about": { "label": "About Us", "template": "about" },
+        "contact": { "label": "Contact Us", "template": "contact" },
+        "classes": { "label": "Our Classes", "template": "classes" },
+        "teachers": { "label": "Our Teachers", "template": "teachers" }
+    }
+}

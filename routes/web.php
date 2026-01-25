@@ -3,9 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/p/{slug}', [App\Http\Controllers\HomeController::class, 'page'])->name('theme.page');
 
 Route::get('/dashboard', function () {
     $user = auth()->user();
@@ -14,6 +13,9 @@ Route::get('/dashboard', function () {
         'staff' => redirect()->route('staff.dashboard'),
         'student' => redirect()->route('student.dashboard'),
         'parent' => redirect()->route('parent.dashboard'),
+        'receptionist' => redirect()->route('receptionist.dashboard'),
+        'driver' => redirect()->route('driver.dashboard'),
+        'principal' => redirect()->route('principal.dashboard'),
         default => view('dashboard'),
     };
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -23,6 +25,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Academic Routes
+    Route::resource('academic-sessions', App\Http\Controllers\Admin\AcademicSessionController::class);
+    Route::resource('terms', App\Http\Controllers\Admin\TermController::class);
     Route::resource('classes', App\Http\Controllers\Admin\ClassRoomController::class)->parameters([
         'classes' => 'classRoom'
     ]);
@@ -163,6 +167,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::get('transport/routes/{transportRoute}/delete', [App\Http\Controllers\Admin\TransportController::class, 'confirmDeleteRoute'])->name('transport.routes.delete');
     Route::delete('transport/routes/{transportRoute}', [App\Http\Controllers\Admin\TransportController::class, 'destroyRoute'])->name('transport.routes.destroy');
 
+    // Transport Allocations
+    Route::get('transport/allocations', [App\Http\Controllers\Admin\TransportAllocationController::class, 'index'])->name('transport.allocations.index');
+    Route::get('transport/allocations/create', [App\Http\Controllers\Admin\TransportAllocationController::class, 'create'])->name('transport.allocations.create');
+    Route::post('transport/allocations', [App\Http\Controllers\Admin\TransportAllocationController::class, 'store'])->name('transport.allocations.store');
+    Route::delete('transport/allocations/{allocation}', [App\Http\Controllers\Admin\TransportAllocationController::class, 'destroy'])->name('transport.allocations.destroy');
+    Route::get('transport/allocations/search-students', [App\Http\Controllers\Admin\TransportAllocationController::class, 'searchStudents'])->name('transport.allocations.search');
+
     // Hostel Management Routes
     Route::resource('hostel', App\Http\Controllers\Admin\HostelController::class);
 
@@ -209,6 +220,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::resource('behavior-points', App\Http\Controllers\Admin\StudentServices\BehaviorController::class);
 
     // Communication Routes
+    Route::get('communication/notification-manager', [App\Http\Controllers\Admin\Communication\NotificationManagerController::class, 'index'])->name('notifications.manager.index');
+    Route::get('communication/notification-manager/create', [App\Http\Controllers\Admin\Communication\NotificationManagerController::class, 'create'])->name('notifications.manager.create');
+    Route::post('communication/notification-manager/send', [App\Http\Controllers\Admin\Communication\NotificationManagerController::class, 'store'])->name('notifications.manager.store');
+    Route::post('communication/notification-manager/process', [App\Http\Controllers\Admin\Communication\NotificationManagerController::class, 'processQueue'])->name('notifications.manager.process');
+
     Route::resource('messages', App\Http\Controllers\Admin\Communication\MessageController::class);
     Route::resource('events', App\Http\Controllers\Admin\Communication\EventController::class);
     Route::resource('notices', App\Http\Controllers\Admin\Communication\NoticeController::class);
@@ -226,12 +242,119 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
         'certificates' => 'certificate'
     ]);
 
+    // Documents & Media Routes
+    Route::resource('documents', App\Http\Controllers\Admin\DocumentController::class);
+    Route::resource('gallery', App\Http\Controllers\Admin\GalleryController::class);
+    // System & Security Routes
+    Route::get('system/activity', [App\Http\Controllers\Admin\SystemLogController::class, 'activity'])->name('system.activity');
+    Route::get('system/login-history', [App\Http\Controllers\Admin\SystemLogController::class, 'loginHistory'])->name('system.login-history');
+    Route::get('system/backups', [App\Http\Controllers\Admin\SystemLogController::class, 'backups'])->name('system.backups');
+
+    // Settings & CMS Routes
+    Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('settings.edit');
+    Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+
+    Route::get('cms/themes', [App\Http\Controllers\Admin\CmsController::class, 'themes'])->name('cms.themes');
+    Route::post('cms/themes/upload', [App\Http\Controllers\Admin\CmsController::class, 'uploadTheme'])->name('cms.themes.upload');
+    Route::post('cms/themes/{theme}/activate', [App\Http\Controllers\Admin\CmsController::class, 'activateTheme'])->name('cms.themes.activate');
+    Route::delete('cms/themes/{theme}', [App\Http\Controllers\Admin\CmsController::class, 'destroy'])->name('cms.themes.destroy');
+
+    Route::get('cms/content', [App\Http\Controllers\Admin\CmsController::class, 'content'])->name('cms.content');
+    Route::put('cms/content/{content}', [App\Http\Controllers\Admin\CmsController::class, 'updateContent'])->name('cms.content.update');
+
+    // Theme Customizer
+    Route::get('cms/customize', [App\Http\Controllers\Admin\CmsController::class, 'customize'])->name('cms.customize');
+    Route::post('cms/customize/save', [App\Http\Controllers\Admin\CmsController::class, 'updateCustomizer'])->name('cms.customize.save');
+
+    Route::post('gallery/{gallery}/upload', [App\Http\Controllers\Admin\GalleryController::class, 'uploadPhoto'])->name('gallery.upload');
+    Route::delete('gallery/photo/{photo}', [App\Http\Controllers\Admin\GalleryController::class, 'destroyPhoto'])->name('gallery.photo.destroy');
+
+    // Budget Routes
+    Route::resource('budgets', App\Http\Controllers\Admin\BudgetController::class);
+
+    // Alumni Routes
+    Route::resource('alumni', App\Http\Controllers\Admin\AlumniController::class);
+    Route::post('alumni/{alumni}/donations', [App\Http\Controllers\Admin\AlumniController::class, 'storeDonation'])->name('alumni.donations.store');
+
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
-    Route::get('/student/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('student.dashboard')->middleware('role:student');
-    Route::get('/parent/dashboard', [App\Http\Controllers\Parent\DashboardController::class, 'index'])->name('parent.dashboard');
+
+    // Student Routes
+    Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/subjects', [App\Http\Controllers\Student\SubjectController::class, 'index'])->name('subjects.index');
+        Route::get('/timetable', [App\Http\Controllers\Student\TimetableController::class, 'index'])->name('timetable.index');
+        Route::get('/exams', [App\Http\Controllers\Student\ExamController::class, 'index'])->name('exams.index');
+        Route::get('/attendance', [App\Http\Controllers\Student\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/fees', [App\Http\Controllers\Student\FeeController::class, 'index'])->name('fees.index');
+    });
+
+    Route::middleware('role:librarian')->prefix('librarian')->name('librarian.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Librarian\DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('books', App\Http\Controllers\Librarian\BookController::class);
+        Route::get('/issue', [App\Http\Controllers\Librarian\IssueController::class, 'create'])->name('issue.create');
+        Route::post('/issue', [App\Http\Controllers\Librarian\IssueController::class, 'store'])->name('issue.store');
+        Route::post('/return/{id}', [App\Http\Controllers\Librarian\IssueController::class, 'returnBook'])->name('issue.return');
+    });
+
+    Route::middleware('role:accountant')->prefix('accountant')->name('accountant.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Accountant\DashboardController::class, 'index'])->name('dashboard');
+
+        // Fee Management
+        Route::get('/fees/assign', [App\Http\Controllers\Accountant\FeeController::class, 'assign'])->name('fees.assign');
+        Route::post('/fees/assign', [App\Http\Controllers\Accountant\FeeController::class, 'storeAssign'])->name('fees.store_assign');
+        Route::resource('fees', App\Http\Controllers\Accountant\FeeController::class);
+
+        Route::resource('payments', App\Http\Controllers\Accountant\PaymentController::class);
+    });
+
+    Route::middleware('role:parent')->prefix('parent')->name('parent.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Parent\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/my-children', [App\Http\Controllers\Parent\ChildController::class, 'index'])->name('children.index');
+        Route::get('/attendance', [App\Http\Controllers\Parent\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/{student}', [App\Http\Controllers\Parent\AttendanceController::class, 'show'])->name('attendance.show');
+        Route::get('/progress/{student}', [App\Http\Controllers\Parent\ProgressController::class, 'show'])->name('progress.show');
+        Route::get('/fees', [App\Http\Controllers\Parent\FeeController::class, 'index'])->name('fees.index');
+        Route::get('/fees/{student}', [App\Http\Controllers\Parent\FeeController::class, 'show'])->name('fees.show');
+    });
+
+    // Staff Routes
+    Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
+        Route::get('/classes', [App\Http\Controllers\Staff\MyClassController::class, 'index'])->name('classes.index');
+        Route::get('/classes/{class}', [App\Http\Controllers\Staff\MyClassController::class, 'show'])->name('classes.show');
+        Route::get('/timetable', [App\Http\Controllers\Staff\TimetableController::class, 'index'])->name('timetable.index');
+
+        // Attendance Routes
+        Route::get('/attendance', [App\Http\Controllers\Staff\AttendanceController::class, 'index'])->name('attendance.index');
+        Route::get('/attendance/create', [App\Http\Controllers\Staff\AttendanceController::class, 'create'])->name('attendance.create');
+        Route::post('/attendance', [App\Http\Controllers\Staff\AttendanceController::class, 'store'])->name('attendance.store');
+        Route::get('/attendance/report', [App\Http\Controllers\Staff\AttendanceController::class, 'report'])->name('attendance.report');
+
+        // Mark Routes
+        Route::get('/marks', [App\Http\Controllers\Staff\MarkController::class, 'index'])->name('marks.index');
+        Route::get('/marks/entry', [App\Http\Controllers\Staff\MarkController::class, 'create'])->name('marks.create');
+        Route::post('/marks', [App\Http\Controllers\Staff\MarkController::class, 'store'])->name('marks.store');
+    });
+
+    // Receptionist Routes
+    Route::middleware('role:receptionist')->prefix('receptionist')->name('receptionist.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Receptionist\DashboardController::class, 'index'])->name('dashboard');
+        // Add other Receptionist routes here (e.g., Visitors, Enquiries)
+    });
+
+    // Driver Routes
+    Route::middleware('role:driver')->prefix('driver')->name('driver.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Driver\DashboardController::class, 'index'])->name('dashboard');
+        // Add other Driver routes here (e.g., Routes view)
+    });
+
+    // Principal Routes
+    Route::middleware('role:principal')->prefix('principal')->name('principal.')->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Principal\DashboardController::class, 'index'])->name('dashboard');
+        // Principal usually has access to everything, often shares Admin routes or has read-only views
+    });
 });
 
 Route::middleware('auth')->group(function () {

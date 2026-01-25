@@ -78,9 +78,7 @@ class StudentControllerTest extends TestCase
 
         $response = $this->actingAs($this->admin)->post(route('students.store'), $data);
 
-        if (session('error')) {
-            dd(session('error'));
-        }
+
         $response->assertRedirect(route('students.index'));
         $response->assertSessionHas('success');
 

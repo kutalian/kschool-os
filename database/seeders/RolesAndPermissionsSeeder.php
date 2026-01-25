@@ -21,6 +21,11 @@ class RolesAndPermissionsSeeder extends Seeder
             'student',
             'parent',
             'staff', // Accounting for 'staff' role seen in routes
+            'accountant',
+            'librarian',
+            'receptionist',
+            'driver',
+            'principal',
         ];
 
         foreach ($roles as $roleName) {

@@ -372,38 +372,127 @@
                         <i class="fas fa-certificate w-6"></i> Certificates
                     </a>
 
+                    <!-- Documents Link (Standalone) -->
+                    <a href="{{ route('documents.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('documents.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-file-alt w-6"></i> Documents
+                    </a>
+
+                    <!-- Gallery Link (Standalone) -->
+                    <a href="{{ route('gallery.index') }}"
+                        class="block mt-1 px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('gallery.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-images w-6"></i> Gallery
+                    </a>
+
+                    <!-- System & Security Links -->
+                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">System</div>
+                    <a href="{{ route('system.activity') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('system.activity') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-history w-6"></i> Activity Logs
+                    </a>
+                    <a href="{{ route('system.login-history') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('system.login-history') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-sign-in-alt w-6"></i> Login History
+                    </a>
+                    <a href="{{ route('system.backups') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('system.backups') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-database w-6"></i> Backups
+                    </a>
+
+                    <!-- Settings & CMS -->
+                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Configuration</div>
+                    <a href="{{ route('settings.edit') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('settings.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-cogs w-6"></i> Settings
+                    </a>
+                    <a href="{{ route('cms.themes') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('cms.themes') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-paint-brush w-6"></i> Themes
+                    </a>
+                    <a href="{{ route('cms.content') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('cms.content') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-edit w-6"></i> Content
+                    </a>
                 @endif
+
 
                 @if(auth()->user()->role === 'staff')
                     <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Academic</div>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
+                    <a href="{{ route('staff.classes.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.classes.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-book w-6"></i> My Classes
                     </a>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
+                    <a href="{{ route('staff.timetable.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.timetable.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-calendar-alt w-6"></i> Timetable
                     </a>
                 @endif
 
                 @if(auth()->user()->role === 'student')
                     <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Student Area</div>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
+                    <a href="{{ route('student.subjects.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('student.subjects.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-book-open w-6"></i> My Subjects
                     </a>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
-                        <i class="fas fa-chart-line w-6"></i> Grades
+                    <a href="{{ route('student.timetable.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('student.timetable.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-calendar-alt w-6"></i> Timetable
                     </a>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
-                        <i class="fas fa-graduation-cap w-6"></i> Exams
+                    <a href="{{ route('student.exams.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('student.exams.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-file-signature w-6"></i> Exams & Grades
+                    </a>
+                    <a href="{{ route('student.attendance.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('student.attendance.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-calendar-check w-6"></i> Attendance
+                    </a>
+                    <a href="{{ route('student.fees.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('student.fees.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-money-bill-wave w-6"></i> Fees
                     </a>
                 @endif
 
                 @if(auth()->user()->role === 'parent')
                     <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Parent Area</div>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
+                    <a href="{{ route('parent.children.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('parent.children.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-child w-6"></i> My Children
                     </a>
-                    <a href="#" class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors text-gray-300">
+                    <a href="{{ route('parent.fees.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('parent.fees.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-money-bill-wave w-6"></i> Fees
+                    </a>
+                @endif
+
+                @if(auth()->user()->role === 'librarian')
+                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Library</div>
+                    <a href="{{ route('librarian.dashboard') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('librarian.dashboard') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-book-reader w-6"></i> Dashboard
+                    </a>
+                    <a href="{{ route('librarian.books.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('librarian.books.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-book w-6"></i> Books
+                    </a>
+                    <a href="{{ route('librarian.issue.create') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('librarian.issue.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-hand-holding w-6"></i> Issue Book
+                    </a>
+                @endif
+
+                @if(auth()->user()->role === 'accountant')
+                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Finance</div>
+                    <a href="{{ route('accountant.dashboard') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('accountant.dashboard') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-chart-line w-6"></i> Dashboard
+                    </a>
+                    <a href="{{ route('accountant.fees.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('accountant.fees.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-file-invoice-dollar w-6"></i> Fee Management
+                    </a>
+                    <a href="{{ route('accountant.payments.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('accountant.payments.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-cash-register w-6"></i> Payments
                     </a>
                 @endif
 
@@ -430,11 +519,58 @@
                 </button>
 
                 <div class="flex items-center gap-4 ml-auto">
-                    <button class="text-gray-400 hover:text-blue-500 transition-colors relative">
-                        <i class="far fa-bell text-xl"></i>
-                        <span
-                            class="absolute top-0 right-0 block h-2 w-2 rounded-full ring-2 ring-white bg-red-500"></span>
-                    </button>
+                    <!-- Notifications Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = ! open" @click.outside="open = false"
+                            class="text-gray-400 hover:text-blue-500 transition-colors relative focus:outline-none">
+                            <i class="far fa-bell text-xl"></i>
+                            @if(isset($unreadCount) && $unreadCount > 0)
+                                <span
+                                    class="absolute -top-1 -right-1 block h-4 w-4 rounded-full ring-2 ring-white bg-red-500 text-white text-[10px] font-bold text-center leading-4">
+                                    {{ $unreadCount }}
+                                </span>
+                            @endif
+                        </button>
+
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="transform opacity-0 scale-95"
+                            x-transition:enter-end="transform opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-75"
+                            x-transition:leave-start="transform opacity-100 scale-100"
+                            x-transition:leave-end="transform opacity-0 scale-95"
+                            class="absolute right-0 z-50 mt-2 w-80 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            style="display: none;">
+
+                            <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                                <span class="text-sm font-semibold text-gray-700">Notifications</span>
+                                {{-- <a href="#" class="text-xs text-blue-500 hover:text-blue-700">Mark all read</a>
+                                --}}
+                            </div>
+
+                            <div class="max-h-64 overflow-y-auto">
+                                @if(isset($notifications) && $notifications->count() > 0)
+                                    @foreach($notifications as $notification)
+                                        <div
+                                            class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 {{ !$notification->is_read ? 'bg-blue-50' : '' }}">
+                                            <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ Str::limit($notification->message, 50) }}
+                                            </p>
+                                            <p class="text-[10px] text-gray-400 mt-1">
+                                                {{ $notification->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="px-4 py-6 text-center text-sm text-gray-500">
+                                        No new notifications
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- <div class="px-4 py-2 border-t border-gray-100 text-center">
+                                <a href="#" class="text-xs text-blue-500 hover:text-blue-700 font-medium">View All</a>
+                            </div> --}}
+                        </div>
+                    </div>
 
                     <div class="relative ml-3" x-data="{ open: false }">
                         <button @click="open = ! open" @click.outside="open = false"

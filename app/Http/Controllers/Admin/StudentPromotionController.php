@@ -48,9 +48,39 @@ class StudentPromotionController extends Controller
             'students.*' => 'exists:students,id'
         ]);
 
-        $count = Student::whereIn('id', $request->students)->update([
-            'class_id' => $request->destination_class_id
-        ]);
+        $settings = \App\Models\SchoolSetting::first();
+        $currentSession = $settings->academic_year ?? date('Y');
+        // Simple logic for next session if not managed dynamically, but ideally user selects it. 
+        // For now, we assume user might want to input it, but the UI doesn't have it.
+        // Let's assume the "Destination" implies the session context or we just use current->next.
+        // Since we implemented AcademicSession, let's try to infer or fallback.
+
+        $nextSession = $request->input('target_session', date('Y', strtotime('+1 year')));
+
+        $promoterId = auth()->id();
+        $count = 0;
+
+        foreach ($request->students as $studentId) {
+            // Log History
+            \App\Models\StudentPromotion::create([
+                'student_id' => $studentId,
+                'from_class_id' => $request->source_class_id,
+                'to_class_id' => $request->destination_class_id,
+                'from_session' => $currentSession,
+                'to_session' => $nextSession,
+                'promotion_status' => 'Promoted',
+                'promotion_date' => now(),
+                'promoted_by' => $promoterId,
+                'created_at' => now(),
+            ]);
+
+            // Update Student
+            Student::where('id', $studentId)->update([
+                'class_id' => $request->destination_class_id
+            ]);
+
+            $count++;
+        }
 
         return redirect()->route('students.promotion', ['source_class_id' => $request->source_class_id])
             ->with('success', "$count students promoted successfully.");

@@ -71,6 +71,7 @@ class StaffController extends Controller
 
         // Create User for Staff
         $user = User::create([
+            'name' => $validated['name'],
             'username' => $username,
             'email' => $validated['email'],
             'password' => Hash::make('password'), // Default password

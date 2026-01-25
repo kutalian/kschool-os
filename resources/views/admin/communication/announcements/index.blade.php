@@ -35,8 +35,10 @@
                     </div>
 
                     <div class="flex justify-end mt-4 pt-4 border-t border-gray-100 space-x-3">
-                        <button class="text-gray-400 hover:text-gray-600 cursor-not-allowed" title="Not implemented yet"><i
-                                class="fas fa-edit mr-1"></i> Edit</button>
+                        <a href="{{ route('announcements.edit', $announcement) }}" class="text-blue-500 hover:text-blue-700"
+                            title="Edit">
+                            <i class="fas fa-edit mr-1"></i> Edit
+                        </a>
                     </div>
                 </div>
             @endforeach

@@ -64,11 +64,11 @@
                                 <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Homeroom</span>
                             </div>
                             <div class="mt-4 flex space-x-2">
-                                <a href="#"
+                                <a href="{{ route('staff.classes.show', $class->id) }}"
                                     class="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 px-3 rounded shadow transition">
                                     <i class="fas fa-users mr-1"></i> Students
                                 </a>
-                                <a href="#"
+                                <a href="{{ route('staff.attendance.create', ['class_id' => $class->id]) }}"
                                     class="flex-1 text-center bg-green-600 hover:bg-green-700 text-white text-sm py-2 px-3 rounded shadow transition">
                                     <i class="fas fa-clipboard-check mr-1"></i> Attendance
                                 </a>
@@ -77,6 +77,37 @@
                     @endforeach
                 </div>
             @endif
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Notices Widget -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Notice Board</h2>
+                    <span
+                        class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">
+                        {{ $notices->count() }} New
+                    </span>
+                </div>
+                <div class="space-y-4">
+                    @forelse($notices as $notice)
+                        <div class="pb-3 border-b border-gray-50 last:border-0">
+                            <h4 class="text-sm font-bold text-gray-800">{{ $notice->title }}</h4>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ Str::limit($notice->message, 100) }}</p>
+                            <div class="mt-2 flex justify-between items-center">
+                                <span class="text-xs text-gray-400">{{ $notice->created_at->diffForHumans() }}</span>
+                                @if($notice->priority == 'Urgent')
+                                    <span class="text-xs text-red-500 font-bold">Urgent</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-gray-500 py-4">
+                            <p class="text-sm">No new notices.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 </x-master-layout>

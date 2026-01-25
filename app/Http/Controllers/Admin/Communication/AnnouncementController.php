@@ -63,7 +63,7 @@ class AnnouncementController extends Controller
      */
     public function edit(Announcement $announcement)
     {
-        //
+        return view('admin.communication.announcements.edit', compact('announcement'));
     }
 
     /**
@@ -71,7 +71,19 @@ class AnnouncementController extends Controller
      */
     public function update(Request $request, Announcement $announcement)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'announcement_type' => 'required|in:General,Academic,Event,Emergency,Holiday',
+            'target_audience' => 'required|in:All,Students,Staff,Parents,Class',
+            'priority' => 'required|in:Low,Normal,High,Urgent',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $announcement->update($validated);
+
+        return redirect()->route('announcements.index')->with('success', 'Announcement updated successfully.');
     }
 
     /**

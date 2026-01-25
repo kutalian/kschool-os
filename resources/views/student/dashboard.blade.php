@@ -14,7 +14,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 font-medium">Attendance</p>
-                        <h3 class="text-xl font-bold text-gray-800">95%</h3>
+                        <h3 class="text-xl font-bold text-gray-800">{{ $attendancePercentage }}%</h3>
                     </div>
                 </div>
             </div>
@@ -27,7 +27,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 font-medium">CGPA</p>
-                        <h3 class="text-xl font-bold text-gray-800">3.8</h3>
+                        <h3 class="text-xl font-bold text-gray-800">{{ $cgpa }}</h3>
                     </div>
                 </div>
             </div>
@@ -39,7 +39,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 font-medium">Due Fees</p>
-                        <h3 class="text-xl font-bold text-gray-800">$0.00</h3>
+                        <h3 class="text-xl font-bold text-gray-800">${{ number_format($dueFees, 2) }}</h3>
                     </div>
                 </div>
             </div>
@@ -67,18 +67,30 @@
 
             <!-- Notices Widget -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-4">Notice Board</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold text-gray-800">Notice Board</h2>
+                    <span
+                        class="bg-blue-100 text-blue-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-blue-200 dark:text-blue-800">
+                        {{ $notices->count() }} New
+                    </span>
+                </div>
                 <div class="space-y-4">
-                    <div class="pb-3 border-b border-gray-50 last:border-0">
-                        <h4 class="text-sm font-bold text-gray-800">Exam Schedule Released</h4>
-                        <p class="text-xs text-gray-500 mt-1">Mid-term exams will start from 25th Jan...</p>
-                        <div class="mt-2 text-xs text-blue-500 cursor-pointer">Read more</div>
-                    </div>
-                    <div class="pb-3 border-b border-gray-50 last:border-0">
-                        <h4 class="text-sm font-bold text-gray-800">Sports Day on Friday</h4>
-                        <p class="text-xs text-gray-500 mt-1">All students are required to wear sports kit...</p>
-                        <div class="mt-2 text-xs text-blue-500 cursor-pointer">Read more</div>
-                    </div>
+                    @forelse($notices as $notice)
+                        <div class="pb-3 border-b border-gray-50 last:border-0">
+                            <h4 class="text-sm font-bold text-gray-800">{{ $notice->title }}</h4>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ Str::limit($notice->message, 100) }}</p>
+                            <div class="mt-2 flex justify-between items-center">
+                                <span class="text-xs text-gray-400">{{ $notice->created_at->diffForHumans() }}</span>
+                                @if($notice->priority == 'Urgent')
+                                    <span class="text-xs text-red-500 font-bold">Urgent</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-gray-500 py-4">
+                            <p class="text-sm">No new notices.</p>
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>

@@ -31,4 +31,9 @@ class Timetable extends Model
     {
         return $this->belongsTo(User::class, 'teacher_id');
     }
+
+    public function period()
+    {
+        return $this->belongsTo(ClassTimetablePeriod::class, 'period_id');
+    }
 }
