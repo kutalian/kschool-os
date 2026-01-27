@@ -6,9 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\SchoolSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
+use App\Services\ImageService;
 
 class SettingController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function edit()
     {
         // Get the first settings row or create empty instance
@@ -34,19 +43,28 @@ class SettingController extends Controller
 
         // Handle File Uploads
         if ($request->hasFile('logo')) {
-            // Delete old logo if exists
             if ($settings->logo_path) {
-                Storage::delete($settings->logo_path);
+                // Extract relative path from asset URL if stored that way
+                $oldRelativePath = str_replace(asset('storage/'), '', $settings->logo_path);
+                $this->imageService->delete($oldRelativePath);
             }
-            $path = $request->file('logo')->store('uploads/settings', 'public');
+            $path = $this->imageService->process($request->file('logo'), 'uploads/settings', [
+                'width' => 400,
+                'quality' => 90
+            ]);
             $settings->logo_path = asset('storage/' . $path);
         }
 
         if ($request->hasFile('favicon')) {
             if ($settings->favicon_path) {
-                Storage::delete($settings->favicon_path);
+                $oldRelativePath = str_replace(asset('storage/'), '', $settings->favicon_path);
+                $this->imageService->delete($oldRelativePath);
             }
-            $path = $request->file('favicon')->store('uploads/settings', 'public');
+            $path = $this->imageService->process($request->file('favicon'), 'uploads/settings', [
+                'width' => 64,
+                'height' => 64,
+                'format' => 'png' // Keep png for better transparency support in icons
+            ]);
             $settings->favicon_path = asset('storage/' . $path);
         }
 
@@ -60,6 +78,8 @@ class SettingController extends Controller
         }
 
         $settings->save();
+
+        Cache::forget('school_settings');
 
         return redirect()->back()->with('success', 'Settings updated successfully.');
     }

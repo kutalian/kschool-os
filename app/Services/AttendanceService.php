@@ -19,23 +19,23 @@ class AttendanceService
      */
     public function recordStudentAttendance(int $classId, string $date, array $attendanceData, array $remarks = []): int
     {
-        return DB::transaction(function () use ($classId, $date, $attendanceData, $remarks) {
-            $count = 0;
-            foreach ($attendanceData as $studentId => $status) {
-                $remark = $remarks[$studentId] ?? null;
+        $data = [];
+        foreach ($attendanceData as $studentId => $status) {
+            $data[] = [
+                'student_id' => $studentId,
+                'date' => $date,
+                'status' => $status,
+                'remarks' => $remarks[$studentId] ?? null
+            ];
+        }
 
-                // Ideally, verify student belongs to classId here, 
-                // but for performance in bulk, we trust the controller/request validation 
-                // or assume the IDs provided are valid for the context.
+        if (empty($data)) {
+            return 0;
+        }
 
-                Attendance::updateOrCreate(
-                    ['student_id' => $studentId, 'date' => $date],
-                    ['status' => $status, 'remarks' => $remark]
-                );
-                $count++;
-            }
-            return $count;
-        });
+        Attendance::upsert($data, ['student_id', 'date'], ['status', 'remarks']);
+
+        return count($data);
     }
 
     /**
@@ -48,18 +48,24 @@ class AttendanceService
      */
     public function recordStaffAttendance(string $date, array $attendanceData, array $remarks = []): int
     {
-        return DB::transaction(function () use ($date, $attendanceData, $remarks) {
-            $count = 0;
-            foreach ($attendanceData as $staffId => $status) {
-                $remark = $remarks[$staffId] ?? null;
+        $data = [];
+        foreach ($attendanceData as $staffId => $status) {
+            $data[] = [
+                'staff_id' => $staffId,
+                'date' => $date,
+                'status' => $status,
+                'remarks' => $remarks[$staffId] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
 
-                StaffAttendance::updateOrCreate(
-                    ['staff_id' => $staffId, 'date' => $date],
-                    ['status' => $status, 'remarks' => $remark]
-                );
-                $count++;
-            }
-            return $count;
-        });
+        if (empty($data)) {
+            return 0;
+        }
+
+        StaffAttendance::upsert($data, ['staff_id', 'date'], ['status', 'remarks', 'updated_at']);
+
+        return count($data);
     }
 }

@@ -3,10 +3,12 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{{ $themeConfig['identity']['site_title'] ?? $settings->school_name ?? 'TalentUpgrade' }} -
-        {{ $themeConfig['identity']['tagline'] ?? 'Best Kids Education' }}
+    <title>
+        @yield('title', ($settings->school_name ?? $themeConfig['identity']['site_title'] ?? 'TalentUpgrade') . ' - ' . ($settings->tagline ?? $themeConfig['identity']['tagline'] ?? 'Best Kids Education'))
     </title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="@yield('meta_description', $themeConfig['identity']['meta_description'] ?? '')">
+    <meta name="keywords" content="@yield('meta_keywords', $themeConfig['identity']['meta_keywords'] ?? '')">
 
     <!-- Favicon -->
     <link href="{{ $settings->favicon_path ?? asset('favicon.ico') }}" rel="icon">
@@ -107,16 +109,26 @@
         </div>
     </div>
 
-    <nav class="bg-white shadow sticky top-0 z-50">
+    <nav class="bg-white shadow sticky top-0 z-50" x-data="{ mobileMenuOpen: false }">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="/" class="flex items-center gap-2 text-secondary font-bold text-3xl font-handlee">
-                @if(isset($themeConfig['identity']['logo_url']) && $themeConfig['identity']['logo_url'])
-                    <img src="{{ asset($themeConfig['identity']['logo_url']) }}" class="h-10" alt="Logo">
+                @if($settings->logo_path)
+                    <img src="{{ $settings->logo_path }}" class="h-10" alt="Logo" loading="lazy">
+                @elseif(isset($themeConfig['identity']['logo_url']) && $themeConfig['identity']['logo_url'])
+                    <img src="{{ asset($themeConfig['identity']['logo_url']) }}" class="h-10" alt="Logo" loading="lazy">
                 @else
                     <i class="fas fa-graduation-cap text-primary"></i>
                 @endif
-                {{ $themeConfig['identity']['site_title'] ?? $settings->school_name ?? 'TalentUpgrade' }}
+                {{ $settings->school_name ?? $themeConfig['identity']['site_title'] ?? 'TalentUpgrade' }}
             </a>
+
+            <!-- Mobile Toggle -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-secondary focus:outline-none">
+                <i class="fas fa-bars text-2xl" x-show="!mobileMenuOpen"></i>
+                <i class="fas fa-times text-2xl" x-show="mobileMenuOpen" style="display: none;"></i>
+            </button>
+
+            <!-- Desktop Menu -->
             <div class="hidden md:flex gap-6 font-bold text-secondary">
                 <a href="{{ route('home') }}"
                     class="hover:text-primary transition {{ request()->routeIs('home') ? 'text-primary' : '' }}">Home</a>
@@ -128,7 +140,51 @@
                     class="hover:text-primary transition {{ request()->is('p/teachers') ? 'text-primary' : '' }}">Teachers</a>
                 <a href="{{ route('theme.page', 'contact') }}"
                     class="hover:text-primary transition {{ request()->is('p/contact') ? 'text-primary' : '' }}">Contact</a>
+
+                @if(isset($customPages) && $customPages->count() > 0)
+                    <div class="relative group">
+                        <button class="hover:text-primary transition flex items-center gap-1">
+                            More <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div
+                            class="absolute left-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all z-50">
+                            @foreach($customPages as $cp)
+                                <a href="{{ route('theme.page', $cp->slug) }}"
+                                    class="block px-4 py-2 text-sm text-secondary hover:bg-blue-50 hover:text-primary">
+                                    {{ $cp->title }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            class="md:hidden bg-white border-t border-gray-100 py-4 px-6 space-y-4 shadow-xl" style="display: none;">
+            <a href="{{ route('home') }}"
+                class="block font-bold text-secondary hover:text-primary {{ request()->routeIs('home') ? 'text-primary' : '' }}">Home</a>
+            <a href="{{ route('theme.page', 'about') }}"
+                class="block font-bold text-secondary hover:text-primary {{ request()->is('p/about') ? 'text-primary' : '' }}">About</a>
+            <a href="{{ route('theme.page', 'classes') }}"
+                class="block font-bold text-secondary hover:text-primary {{ request()->is('p/classes') ? 'text-primary' : '' }}">Classes</a>
+            <a href="{{ route('theme.page', 'teachers') }}"
+                class="block font-bold text-secondary hover:text-primary {{ request()->is('p/teachers') ? 'text-primary' : '' }}">Teachers</a>
+            <a href="{{ route('theme.page', 'contact') }}"
+                class="block font-bold text-secondary hover:text-primary {{ request()->is('p/contact') ? 'text-primary' : '' }}">Contact</a>
+
+            @if(isset($customPages) && $customPages->count() > 0)
+                <div class="pt-4 border-t border-gray-100">
+                    <p class="text-xs font-bold text-gray-400 uppercase mb-2">More Pages</p>
+                    @foreach($customPages as $cp)
+                        <a href="{{ route('theme.page', $cp->slug) }}" class="block py-2 text-secondary hover:text-primary">
+                            {{ $cp->title }}
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </nav>
 
@@ -142,7 +198,7 @@
         <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
                 <a href="/" class="flex items-center gap-2 text-white font-bold text-3xl font-handlee mb-4">
-                    <i class="fas fa-child text-primary"></i> {{ $settings->school_name ?? 'TalentUpgrade' }}
+                    <i class="fas fa-child text-primary"></i> {{ $settings->school_name ?? $themeConfig['identity']['site_title'] ?? 'TalentUpgrade' }}
                 </a>
                 <p class="text-gray-300 text-sm">
                     Labore dolor amet ipsum ea, erat sit amet dolores autem, ipsum rebum stet amet sed eos condim.

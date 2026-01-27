@@ -399,19 +399,9 @@
                         <i class="fas fa-database w-6"></i> Backups
                     </a>
 
-                    <!-- Settings & CMS -->
-                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Configuration</div>
-                    <a href="{{ route('settings.edit') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('settings.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-cogs w-6"></i> Settings
-                    </a>
-                    <a href="{{ route('cms.themes') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('cms.themes') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-paint-brush w-6"></i> Themes
-                    </a>
-                    <a href="{{ route('cms.content') }}"
-                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('cms.content') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
-                        <i class="fas fa-edit w-6"></i> Content
+                    <a href="{{ route('admin.website.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('admin.website.*') || request()->routeIs('settings.*') || request()->routeIs('cms.*') || request()->routeIs('admin.cms.pages.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-globe w-6"></i> Website Manager
                     </a>
                 @endif
 
@@ -556,7 +546,8 @@
                                             <p class="text-xs text-gray-500 mt-1">{{ Str::limit($notification->message, 50) }}
                                             </p>
                                             <p class="text-[10px] text-gray-400 mt-1">
-                                                {{ $notification->created_at->diffForHumans() }}</p>
+                                                {{ $notification->created_at->diffForHumans() }}
+                                            </p>
                                         </div>
                                     @endforeach
                                 @else

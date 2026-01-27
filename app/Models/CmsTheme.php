@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class CmsTheme extends Model
 {
@@ -28,6 +29,7 @@ class CmsTheme extends Model
     {
         self::where('is_active', true)->update(['is_active' => false]);
         $this->update(['is_active' => true]);
+        Cache::forget('active_theme');
     }
 
     /**
@@ -35,10 +37,12 @@ class CmsTheme extends Model
      */
     public function getManifestAttribute()
     {
-        $path = resource_path("views/themes/{$this->directory}/theme.json");
-        if (file_exists($path)) {
-            return json_decode(file_get_contents($path), true);
-        }
-        return [];
+        return Cache::remember("theme_manifest_{$this->directory}", 86400, function () {
+            $path = resource_path("views/themes/{$this->directory}/theme.json");
+            if (file_exists($path)) {
+                return json_decode(file_get_contents($path), true);
+            }
+            return [];
+        });
     }
 }

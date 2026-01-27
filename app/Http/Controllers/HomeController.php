@@ -5,26 +5,34 @@ namespace App\Http\Controllers;
 use App\Models\SchoolSetting;
 use App\Models\CmsTheme;
 use App\Models\WebsiteContent;
+use App\Models\CmsPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        // 1. Get School Settings (Shared globally usually, but fetching here for clarity)
-        $settings = SchoolSetting::firstOrNew();
+        // 1. Get School Settings
+        $settings = Cache::remember('school_settings', 86400, function () {
+            return SchoolSetting::firstOrNew();
+        });
 
         // 2. Get Active Theme
-        $activeTheme = CmsTheme::where('is_active', true)->first();
+        $activeTheme = Cache::remember('active_theme', 86400, function () {
+            return CmsTheme::where('is_active', true)->first();
+        });
 
-        // Fallback to default if no theme is active (shouldn't happen if seeded correctly)
+        // Fallback to default if no theme is active
         $themeDirectory = $activeTheme ? $activeTheme->directory : 'default';
 
         // 3. Get Homepage Content
-        $sections = WebsiteContent::where('is_active', true)
-            ->orderBy('display_order')
-            ->get();
+        $sections = Cache::remember('homepage_content', 86400, function () {
+            return WebsiteContent::where('is_active', true)
+                ->orderBy('display_order')
+                ->get();
+        });
 
         // 4. Check if view exists, otherwise fallback
         $viewPath = "themes.{$themeDirectory}.home";
@@ -44,8 +52,12 @@ class HomeController extends Controller
 
     public function page($slug)
     {
-        $settings = SchoolSetting::firstOrNew();
-        $activeTheme = CmsTheme::where('is_active', true)->first();
+        $settings = Cache::remember('school_settings', 86400, function () {
+            return SchoolSetting::firstOrNew();
+        });
+        $activeTheme = Cache::remember('active_theme', 86400, function () {
+            return CmsTheme::where('is_active', true)->first();
+        });
 
         if (!$activeTheme)
             return abort(404);
@@ -53,7 +65,33 @@ class HomeController extends Controller
         $viewPath = "themes.{$activeTheme->directory}.{$slug}";
 
         if (!View::exists($viewPath)) {
-            return abort(404);
+            // Check Database for custom page (Cached)
+            $page = Cache::remember("cms_page_{$slug}", 86400, function () use ($slug) {
+                return CmsPage::where('slug', $slug)->where('is_active', true)->first();
+            });
+
+            if (!$page) {
+                return abort(404);
+            }
+
+            $themeConfig = $activeTheme->config ?? [];
+            $manifest = $activeTheme->manifest;
+
+            // Try specific template or fallback to generic 'page'
+            $template = "themes.{$activeTheme->directory}." . ($page->template ?? 'page');
+            if (!View::exists($template)) {
+                $template = "themes.{$activeTheme->directory}.page";
+            }
+
+            // If even generic page doesn't exist, we might have a problem
+            if (!View::exists($template)) {
+                return view('welcome', ['content' => $page->content]); // very basic fallback
+            }
+
+            $teachers = \App\Models\Staff::take(4)->get();
+            $classes = \App\Models\ClassRoom::take(6)->get();
+
+            return view($template, compact('settings', 'activeTheme', 'themeConfig', 'manifest', 'teachers', 'classes', 'page'));
         }
 
         $themeConfig = $activeTheme->config ?? [];

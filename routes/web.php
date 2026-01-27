@@ -250,21 +250,36 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::get('system/login-history', [App\Http\Controllers\Admin\SystemLogController::class, 'loginHistory'])->name('system.login-history');
     Route::get('system/backups', [App\Http\Controllers\Admin\SystemLogController::class, 'backups'])->name('system.backups');
 
-    // Settings & CMS Routes
-    Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('settings.edit');
-    Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    // Unified Website Manager
+    Route::prefix('website')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\WebsiteController::class, 'index'])->name('admin.website.index');
 
-    Route::get('cms/themes', [App\Http\Controllers\Admin\CmsController::class, 'themes'])->name('cms.themes');
-    Route::post('cms/themes/upload', [App\Http\Controllers\Admin\CmsController::class, 'uploadTheme'])->name('cms.themes.upload');
-    Route::post('cms/themes/{theme}/activate', [App\Http\Controllers\Admin\CmsController::class, 'activateTheme'])->name('cms.themes.activate');
-    Route::delete('cms/themes/{theme}', [App\Http\Controllers\Admin\CmsController::class, 'destroy'])->name('cms.themes.destroy');
+        // Site Identity (Settings)
+        Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('settings.edit');
+        Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 
-    Route::get('cms/content', [App\Http\Controllers\Admin\CmsController::class, 'content'])->name('cms.content');
-    Route::put('cms/content/{content}', [App\Http\Controllers\Admin\CmsController::class, 'updateContent'])->name('cms.content.update');
+        // Themes & Customization
+        Route::get('themes', [App\Http\Controllers\Admin\CmsController::class, 'themes'])->name('cms.themes');
+        Route::post('themes/upload', [App\Http\Controllers\Admin\CmsController::class, 'uploadTheme'])->name('cms.themes.upload');
+        Route::post('themes/{theme}/activate', [App\Http\Controllers\Admin\CmsController::class, 'activateTheme'])->name('cms.themes.activate');
+        Route::delete('themes/{theme}', [App\Http\Controllers\Admin\CmsController::class, 'destroy'])->name('cms.themes.destroy');
+        Route::get('customize', [App\Http\Controllers\Admin\CmsController::class, 'customize'])->name('cms.customize');
+        Route::post('customize/save', [App\Http\Controllers\Admin\CmsController::class, 'updateCustomizer'])->name('cms.customize.save');
 
-    // Theme Customizer
-    Route::get('cms/customize', [App\Http\Controllers\Admin\CmsController::class, 'customize'])->name('cms.customize');
-    Route::post('cms/customize/save', [App\Http\Controllers\Admin\CmsController::class, 'updateCustomizer'])->name('cms.customize.save');
+        // Content
+        Route::get('content', [App\Http\Controllers\Admin\CmsController::class, 'content'])->name('cms.content');
+        Route::put('content/{content}', [App\Http\Controllers\Admin\CmsController::class, 'updateContent'])->name('cms.content.update');
+
+        // Pages
+        Route::resource('pages', App\Http\Controllers\Admin\CmsPageController::class)->names([
+            'index' => 'admin.cms.pages.index',
+            'create' => 'admin.cms.pages.create',
+            'store' => 'admin.cms.pages.store',
+            'edit' => 'admin.cms.pages.edit',
+            'update' => 'admin.cms.pages.update',
+            'destroy' => 'admin.cms.pages.destroy',
+        ]);
+    });
 
     Route::post('gallery/{gallery}/upload', [App\Http\Controllers\Admin\GalleryController::class, 'uploadPhoto'])->name('gallery.upload');
     Route::delete('gallery/photo/{photo}', [App\Http\Controllers\Admin\GalleryController::class, 'destroyPhoto'])->name('gallery.photo.destroy');

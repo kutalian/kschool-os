@@ -18,10 +18,10 @@
                     <div class="relative">
                         @if($section->image_path)
                             <img class="w-full max-w-lg mx-auto rounded-full shadow-2xl border-[10px] border-white/20"
-                                src="{{ asset($section->image_path) }}" alt="Hero Image">
+                                src="{{ asset($section->image_path) }}" alt="Hero Image" loading="lazy">
                         @else
                             <img class="w-full max-w-lg mx-auto rounded-full shadow-2xl border-[10px] border-white/20"
-                                src="https://via.placeholder.com/600x600" alt="Hero Image">
+                                src="https://via.placeholder.com/600x600" alt="Hero Image" loading="lazy">
                         @endif
                     </div>
                 </div>
@@ -85,15 +85,16 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                     <div class="relative">
                         @if($section->image_path)
-                            <img src="{{ asset($section->image_path) }}" class="w-full rounded-2xl shadow-xl" alt="About Us">
+                            <img src="{{ asset($section->image_path) }}" class="w-full rounded-2xl shadow-xl" alt="About Us"
+                                loading="lazy">
                         @else
                             <div class="grid grid-cols-2 gap-4">
                                 <img class="rounded-full w-full mt-12"
                                     src="https://images.unsplash.com/photo-1588072432836-e10032774350?w=500&auto=format&fit=crop&q=60"
-                                    alt="">
+                                    alt="" loading="lazy">
                                 <img class="rounded-full w-full"
                                     src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&auto=format&fit=crop&q=60"
-                                    alt="">
+                                    alt="" loading="lazy">
                             </div>
                         @endif
                     </div>
@@ -150,7 +151,7 @@
                     </div>
                     <div class="hidden md:block">
                         <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=2000&auto=format&fit=crop"
-                            class="rounded-full border-8 border-white w-80 h-80 object-cover ml-auto" alt="Teacher">
+                            class="rounded-full border-8 border-white w-80 h-80 object-cover ml-auto" alt="Teacher" loading="lazy">
                     </div>
                 </div>
             </div>
@@ -170,8 +171,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="rounded-2xl shadow-lg run overflow-hidden h-80 group relative">
                         <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=1000&auto=format&fit=crop"
-                            class="w-full h-full object-cover transition duration-300 group-hover:scale-110"
-                            alt="Students Learning">
+                            class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Students Learning"
+                            loading="lazy">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                             <h3 class="text-white font-bold font-handlee text-2xl">Interactive Learning</h3>
                         </div>
@@ -179,14 +180,15 @@
                     <div class="rounded-2xl shadow-lg overflow-hidden h-80 group relative">
                         <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1000&auto=format&fit=crop"
                             class="w-full h-full object-cover transition duration-300 group-hover:scale-110"
-                            alt="Classroom Activity">
+                            alt="Classroom Activity" loading="lazy">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                             <h3 class="text-white font-bold font-handlee text-2xl">Creative Arts</h3>
                         </div>
                     </div>
                     <div class="rounded-2xl shadow-lg overflow-hidden h-80 group relative">
                         <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=1000&auto=format&fit=crop"
-                            class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Group Study">
+                            class="w-full h-full object-cover transition duration-300 group-hover:scale-110" alt="Group Study"
+                            loading="lazy">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
                             <h3 class="text-white font-bold font-handlee text-2xl">Academic Excellence</h3>
                         </div>
@@ -246,10 +248,11 @@
                                     <div
                                         class="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-100 group-hover:border-primary/50 transition">
                                         @if($teacher->profile_pic)
-                                            <img src="{{ $teacher->profile_pic }}" class="w-full h-full object-cover" alt="{{ $teacher->name }}">
+                                            <img src="{{ $teacher->profile_pic }}" class="w-full h-full object-cover" alt="{{ $teacher->name }}"
+                                                loading="lazy">
                                         @else
                                             <img src="https://source.unsplash.com/random/200x200?teacher&sig={{ $teacher->id }}"
-                                                class="w-full h-full object-cover" alt="{{ $teacher->name }}">
+                                                class="w-full h-full object-cover" alt="{{ $teacher->name }}" loading="lazy">
                                         @endif
                                     </div>
                                     <h4 class="font-bold font-handlee text-xl mb-1">{{ $teacher->name }}</h4>
@@ -270,7 +273,7 @@
                                 <div
                                     class="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-100 group-hover:border-primary/50 transition">
                                     <img src="https://images.unsplash.com/photo-1580894732444-8ecded7900cd?w=500&auto=format&fit=crop"
-                                        class="w-full h-full object-cover" alt="">
+                                        class="w-full h-full object-cover" alt="" loading="lazy">
                                 </div>
                                 <h4 class="font-bold font-handlee text-xl mb-1">Julia Smith</h4>
                                 <p class="text-gray-500 text-sm group-hover:text-white/80 transition">Music Teacher</p>
@@ -280,7 +283,7 @@
                                 <div
                                     class="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-100 group-hover:border-primary/50 transition">
                                     <img src="https://images.unsplash.com/photo-1521235042493-c5bef0bdea9c?w=500&auto=format&fit=crop"
-                                        class="w-full h-full object-cover" alt="">
+                                        class="w-full h-full object-cover" alt="" loading="lazy">
                                 </div>
                                 <h4 class="font-bold font-handlee text-xl mb-1">Jhon Doe</h4>
                                 <p class="text-gray-500 text-sm group-hover:text-white/80 transition">Language Teacher</p>
@@ -290,7 +293,7 @@
                                 <div
                                     class="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-100 group-hover:border-primary/50 transition">
                                     <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500&auto=format&fit=crop"
-                                        class="w-full h-full object-cover" alt="">
+                                        class="w-full h-full object-cover" alt="" loading="lazy">
                                 </div>
                                 <h4 class="font-bold font-handlee text-xl mb-1">Mollie Ross</h4>
                                 <p class="text-gray-500 text-sm group-hover:text-white/80 transition">Dance Teacher</p>
@@ -300,7 +303,7 @@
                                 <div
                                     class="relative w-48 h-48 mx-auto mb-6 rounded-full overflow-hidden border-4 border-gray-100 group-hover:border-primary/50 transition">
                                     <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500&auto=format&fit=crop"
-                                        class="w-full h-full object-cover" alt="">
+                                        class="w-full h-full object-cover" alt="" loading="lazy">
                                 </div>
                                 <h4 class="font-bold font-handlee text-xl mb-1">Donald John</h4>
                                 <p class="text-gray-500 text-sm group-hover:text-white/80 transition">Art Teacher</p>
@@ -322,7 +325,7 @@
                                 elitr eirmod clita lorem. Dolor tempor ipsum sanct clita"</p>
                             <div class="flex items-center gap-4">
                                 <img src="https://randomuser.me/api/portraits/women/11.jpg"
-                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="">
+                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="" loading="lazy">
                                 <div>
                                     <h5 class="font-bold font-handlee text-secondary">Parent Name</h5>
                                     <span class="text-xs text-gray-500">Profession</span>
@@ -335,7 +338,7 @@
                                 elitr eirmod clita lorem. Dolor tempor ipsum sanct clita"</p>
                             <div class="flex items-center gap-4">
                                 <img src="https://randomuser.me/api/portraits/men/32.jpg"
-                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="">
+                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="" loading="lazy">
                                 <div>
                                     <h5 class="font-bold font-handlee text-secondary">Parent Name</h5>
                                     <span class="text-xs text-gray-500">Profession</span>
@@ -348,7 +351,7 @@
                                 elitr eirmod clita lorem. Dolor tempor ipsum sanct clita"</p>
                             <div class="flex items-center gap-4">
                                 <img src="https://randomuser.me/api/portraits/women/44.jpg"
-                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="">
+                                    class="w-16 h-16 rounded-full border-2 border-white shadow" alt="" loading="lazy">
                                 <div>
                                     <h5 class="font-bold font-handlee text-secondary">Parent Name</h5>
                                     <span class="text-xs text-gray-500">Profession</span>

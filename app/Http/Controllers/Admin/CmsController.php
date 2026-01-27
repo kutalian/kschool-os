@@ -5,13 +5,24 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CmsTheme;
 use App\Models\WebsiteContent;
+use App\Models\SchoolSetting;
+use App\Models\CmsPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
+use App\Services\ImageService;
 use ZipArchive;
 
 class CmsController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     // --- Theme Management ---
     public function themes()
     {
@@ -22,6 +33,7 @@ class CmsController extends Controller
             $manifestPath = "$folder/theme.json";
 
             if (File::exists($manifestPath)) {
+                $manifest = json_decode(File::get($manifestPath), true);
                 $theme = CmsTheme::where('directory', $directory)->first();
                 if (!$theme) {
                     CmsTheme::create([
@@ -36,6 +48,7 @@ class CmsController extends Controller
                         'version' => $manifest['version'] ?? '1.0',
                     ]);
                 }
+                Cache::forget("theme_manifest_{$directory}");
             }
         }
 
@@ -71,6 +84,7 @@ class CmsController extends Controller
                     ]
                 );
 
+                Cache::forget("theme_manifest_{$themeName}");
                 return redirect()->back()->with('success', 'Theme uploaded successfully.');
             } else {
                 return redirect()->back()->with('error', 'Failed to extract ZIP file.');
@@ -125,9 +139,13 @@ class CmsController extends Controller
 
         if ($request->hasFile('image')) {
             if ($content->image_path) {
-                Storage::delete($content->image_path);
+                $oldRelativePath = str_replace(asset('storage/'), '', $content->image_path);
+                $this->imageService->delete($oldRelativePath);
             }
-            $path = $request->file('image')->store('uploads/cms', 'public');
+            $path = $this->imageService->process($request->file('image'), 'uploads/cms', [
+                'width' => 1200, // Reasonable max width for section images
+                'quality' => 85
+            ]);
             $content->image_path = asset('storage/' . $path);
         }
 
@@ -135,6 +153,8 @@ class CmsController extends Controller
 
         // Settings are already validated as array, Eloquent casts handles JSON encoding
         $content->save();
+
+        Cache::forget('homepage_content');
 
         return redirect()->back()->with('success', 'Section updated successfully.');
     }
@@ -150,6 +170,11 @@ class CmsController extends Controller
         $manifest = $activeTheme->manifest;
         $config = $activeTheme->config ?? [];
 
+        // Load additional data for unified management
+        $settings = SchoolSetting::first() ?? new SchoolSetting();
+        $sections = WebsiteContent::orderBy('display_order')->get();
+        $pages = CmsPage::all();
+
         // Fill config with defaults from manifest if missing
         if (isset($manifest['settings'])) {
             foreach ($manifest['settings'] as $groupKey => $group) {
@@ -161,7 +186,7 @@ class CmsController extends Controller
             }
         }
 
-        return view('admin.cms.customize', compact('activeTheme', 'config', 'manifest'));
+        return view('admin.cms.customize', compact('activeTheme', 'config', 'manifest', 'settings', 'sections', 'pages'));
     }
 
     public function updateCustomizer(Request $request)
@@ -169,27 +194,97 @@ class CmsController extends Controller
         $activeTheme = CmsTheme::where('is_active', true)->firstOrFail();
         $manifest = $activeTheme->manifest;
 
-        // Dynamic Validation could be added here based on manifest
-        $request->validate([
-            'config' => 'required|array',
-            'logo' => 'nullable|image|max:2048',
-        ]);
+        // 1. Handle Master Identity (SchoolSetting) & Sync with Theme Config
+        if ($request->has('identity')) {
+            $settings = SchoolSetting::first() ?? new SchoolSetting();
+            $identityData = $request->input('identity');
+            $config = $activeTheme->config ?? [];
 
-        $config = $request->input('config');
+            $settings->school_name = $identityData['school_name'] ?? $settings->school_name;
+            $settings->tagline = $identityData['tagline'] ?? $settings->tagline;
+            $settings->school_email = $identityData['school_email'] ?? $settings->school_email;
 
-        // Handle Image Uploads dynamically based on manifest field types
-        foreach ($manifest['settings'] ?? [] as $groupKey => $group) {
-            foreach ($group['fields'] as $fieldKey => $field) {
-                if ($field['type'] === 'image' && $request->hasFile("images.$groupKey.$fieldKey")) {
-                    $path = $request->file("images.$groupKey.$fieldKey")->store('uploads/branding', 'public');
-                    $config[$groupKey][$fieldKey] = asset('storage/' . $path);
+            // Sync with Theme Config if theme defines these identity keys
+            if (isset($manifest['settings']['identity'])) {
+                $config['identity']['site_title'] = $settings->school_name;
+                $config['identity']['tagline'] = $settings->tagline;
+            }
+
+            if ($request->hasFile('identity_logo')) {
+                if ($settings->logo_path) {
+                    $oldPath = str_replace(asset('storage/'), '', $settings->logo_path);
+                    $this->imageService->delete($oldPath);
+                }
+                $path = $this->imageService->process($request->file('identity_logo'), 'uploads/settings');
+                $settings->logo_path = asset('storage/' . $path);
+
+                // Sync logo with theme if applicable
+                if (isset($manifest['settings']['identity']['fields']['logo_url'])) {
+                    $config['identity']['logo_url'] = $settings->logo_path;
                 }
             }
+
+            if ($request->hasFile('identity_favicon')) {
+                if ($settings->favicon_path) {
+                    $oldPath = str_replace(asset('storage/'), '', $settings->favicon_path);
+                    $this->imageService->delete($oldPath);
+                }
+                $path = $this->imageService->process($request->file('identity_favicon'), 'uploads/settings', ['width' => 64, 'height' => 64]);
+                $settings->favicon_path = asset('storage/' . $path);
+            }
+
+            $settings->save();
+            $activeTheme->config = $config;
+            $activeTheme->save();
+
+            Cache::forget('school_settings');
+            Cache::forget('active_theme');
         }
 
-        $activeTheme->config = $config;
-        $activeTheme->save();
+        // 2. Handle Theme Content Sections (WebsiteContent)
+        if ($request->has('sections')) {
+            foreach ($request->input('sections') as $id => $sectionData) {
+                $section = WebsiteContent::find($id);
+                if ($section) {
+                    $section->update($sectionData);
 
-        return redirect()->back()->with('success', 'Theme settings updated.');
+                    // Handle section image if uploaded
+                    if ($request->hasFile("section_images.$id")) {
+                        if ($section->image_path) {
+                            $oldPath = str_replace(asset('storage/'), '', $section->image_path);
+                            $this->imageService->delete($oldPath);
+                        }
+                        $path = $this->imageService->process($request->file("section_images.$id"), 'uploads/cms');
+                        $section->image_path = asset('storage/' . $path);
+                        $section->save();
+                    }
+                }
+            }
+            Cache::forget('homepage_content');
+        }
+
+        // 3. Handle Theme Config & Images
+        if ($request->has('config')) {
+            $config = $request->input('config');
+
+            foreach ($manifest['settings'] ?? [] as $groupKey => $group) {
+                foreach ($group['fields'] as $fieldKey => $field) {
+                    if ($field['type'] === 'image' && $request->hasFile("images.$groupKey.$fieldKey")) {
+                        if (isset($config[$groupKey][$fieldKey])) {
+                            $oldPath = str_replace(asset('storage/'), '', $config[$groupKey][$fieldKey]);
+                            $this->imageService->delete($oldPath);
+                        }
+                        $path = $this->imageService->process($request->file("images.$groupKey.$fieldKey"), 'uploads/branding');
+                        $config[$groupKey][$fieldKey] = asset('storage/' . $path);
+                    }
+                }
+            }
+
+            $activeTheme->config = $config;
+            $activeTheme->save();
+            Cache::forget('active_theme');
+        }
+
+        return redirect()->back()->with('success', 'Master customization successfully applied.');
     }
 }
