@@ -57,7 +57,8 @@ class AttendanceController extends Controller
             'class_id' => 'required|exists:classes,id',
             'date' => 'required|date',
             'attendance' => 'required|array',
-            'attendance.*' => 'required|in:present,absent,late,excused'
+            'attendance.*' => 'required|in:present,absent,late,excused',
+            'remarks' => 'nullable|array',
         ]);
 
         $classId = $request->class_id;
@@ -72,6 +73,7 @@ class AttendanceController extends Controller
                 ],
                 [
                     'status' => $status,
+                    'remarks' => $request->remarks[$studentId] ?? null,
                     'recorded_by' => Auth::id()
                 ]
             );

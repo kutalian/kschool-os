@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'School ERP') }}</title>
+    <title>{{ $settings->school_name ?? config('app.name', 'School ERP') }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ $settings->favicon_path ?? asset('favicon.ico') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,8 +39,8 @@
             id="sidebar">
             <div class="p-6 border-b border-slate-700 flex items-center justify-between">
                 <a href="{{ route('dashboard') }}"
-                    class="text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
-                    School ERP
+                    class="text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400">
+                    {{ $settings->school_name ?? 'School ERP' }}
                 </a>
                 <!-- Mobile Close Button -->
                 <button @click="sidebarOpen = false" class="md:hidden text-gray-400 hover:text-white">
@@ -201,7 +202,7 @@
                     </div>
 
                     <!-- Human Resources Group -->
-                    <div x-data="{ open: {{ request()->routeIs('staff.*', 'staff-attendance.*', 'performance-reviews.*', 'users.*') ? 'true' : 'false' }} }"
+                    <div x-data="{ open: {{ request()->routeIs('staff.*', 'staff-attendance.*', 'performance-reviews.*', 'users.*', 'admin.users.deletions') ? 'true' : 'false' }} }"
                         class="mt-1">
                         <button @click="open = !open"
                             class="flex items-center justify-between w-full px-4 py-2.5 rounded hover:bg-slate-800 text-gray-300 transition-colors"
@@ -228,6 +229,10 @@
                             <a href="{{ route('users.index') }}"
                                 class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('users.*') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
                                 System Users
+                            </a>
+                            <a href="{{ route('admin.users.deletions') }}"
+                                class="block px-4 py-2 rounded text-sm hover:text-white transition-colors {{ request()->routeIs('admin.users.deletions') ? 'text-blue-400 font-medium' : 'text-gray-400' }}">
+                                Deletion Requests
                             </a>
                         </div>
                     </div>
@@ -416,6 +421,45 @@
                         class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.timetable.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-calendar-alt w-6"></i> Timetable
                     </a>
+                    <a href="{{ route('staff.assignments.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.assignments.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-tasks w-6"></i> Assignments
+                    </a>
+                    <a href="{{ route('staff.lesson-plans.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.lesson-plans.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-chalkboard-teacher w-6"></i> Lesson Plans
+                    </a>
+                    <a href="{{ route('staff.exam-questions.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.exam-questions.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-file-invoice w-6"></i> Exam Questions
+                    </a>
+                    <a href="{{ route('staff.disciplinary.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.disciplinary.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-exclamation-triangle w-6"></i> Disciplinary
+                    </a>
+                    <a href="{{ route('forum.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('forum.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-comments w-6"></i> General Forum
+                    </a>
+
+                    <div class="pt-4 pb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">HR & Self-Service
+                    </div>
+                    <a href="{{ route('staff.messages.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.messages.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-envelope w-6"></i> Messages
+                    </a>
+                    <a href="{{ route('staff.leave.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.leave.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-paper-plane w-6"></i> Leave Applications
+                    </a>
+                    <a href="{{ route('staff.payroll.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.payroll.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-wallet w-6"></i> My Payroll
+                    </a>
+                    <a href="{{ route('staff.library.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('staff.library.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-book-reader w-6"></i> My Library
+                    </a>
                 @endif
 
                 @if(auth()->user()->role === 'student')
@@ -467,6 +511,10 @@
                     <a href="{{ route('librarian.issue.create') }}"
                         class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('librarian.issue.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
                         <i class="fas fa-hand-holding w-6"></i> Issue Book
+                    </a>
+                    <a href="{{ route('librarian.requests.index') }}"
+                        class="block px-4 py-2.5 rounded hover:bg-slate-800 transition-colors {{ request()->routeIs('librarian.requests.*') ? 'bg-slate-800 text-blue-400' : 'text-gray-300' }}">
+                        <i class="fas fa-clock w-6"></i> Book Requests
                     </a>
                 @endif
 
@@ -533,22 +581,27 @@
 
                             <div class="px-4 py-2 border-b border-gray-100 flex justify-between items-center">
                                 <span class="text-sm font-semibold text-gray-700">Notifications</span>
-                                {{-- <a href="#" class="text-xs text-blue-500 hover:text-blue-700">Mark all read</a>
-                                --}}
+                                @if(isset($unreadCount) && $unreadCount > 0)
+                                    <form action="{{ route('notifications.markAllRead') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="text-xs text-blue-500 hover:text-blue-700">Mark all
+                                            read</button>
+                                    </form>
+                                @endif
                             </div>
 
                             <div class="max-h-64 overflow-y-auto">
                                 @if(isset($notifications) && $notifications->count() > 0)
                                     @foreach($notifications as $notification)
-                                        <div
-                                            class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 {{ !$notification->is_read ? 'bg-blue-50' : '' }}">
+                                        <a href="{{ route('notifications.markRead', $notification) }}"
+                                            class="block px-4 py-3 border-b border-gray-50 hover:bg-gray-50 {{ !$notification->is_read ? 'bg-blue-50' : '' }}">
                                             <p class="text-sm font-medium text-gray-900">{{ $notification->title }}</p>
                                             <p class="text-xs text-gray-500 mt-1">{{ Str::limit($notification->message, 50) }}
                                             </p>
                                             <p class="text-[10px] text-gray-400 mt-1">
                                                 {{ $notification->created_at->diffForHumans() }}
                                             </p>
-                                        </div>
+                                        </a>
                                     @endforeach
                                 @else
                                     <div class="px-4 py-6 text-center text-sm text-gray-500">
@@ -571,7 +624,7 @@
                                 {{ substr(auth()->user()->username, 0, 1) }}
                             </div>
                             <span
-                                class="hidden md:inline font-medium text-gray-700">{{ auth()->user()->username }}</span>
+                                class="hidden md:inline font-medium text-gray-700">{{ auth()->user()->first_name }}</span>
                             <i class="fas fa-chevron-down text-xs text-gray-400"></i>
                         </button>
 
@@ -584,21 +637,38 @@
                             class="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                             style="display: none;">
 
-                            <div class="px-4 py-2 border-b border-gray-100">
-                                <p class="text-sm text-gray-500">Signed in as</p>
+                            <div class="px-4 py-2 border-b border-gray-100 bg-gray-50/50">
+                                <p
+                                    class="text-[10px] uppercase tracking-wider text-gray-500 font-semibold leading-none mb-1">
+                                    Signed in as</p>
                                 <p class="text-sm font-bold text-gray-900 truncate">{{ auth()->user()->email }}</p>
                             </div>
 
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Your Profile</a>
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Settings</a>
+                            <div class="py-1">
+                                <a href="{{ route('profile.edit') }}"
+                                    class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-user-circle w-4 text-gray-400"></i>
+                                    <span>Your Profile</span>
+                                </a>
+                                @if(auth()->user()->role === 'admin')
+                                    <a href="{{ route('admin.website.index') }}"
+                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                        <i class="fas fa-cog w-4 text-gray-400"></i>
+                                        <span>Settings</span>
+                                    </a>
+                                @endif
+                            </div>
 
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit"
-                                    class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                                    Sign out
-                                </button>
-                            </form>
+                            <div class="border-t border-gray-100 py-1">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                        <i class="fas fa-sign-out-alt w-4"></i>
+                                        <span>Sign out</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -6,6 +6,13 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Notification;
 use App\Models\CmsPage;
+use App\Models\SchoolSetting;
+use App\Models\Message;
+use App\Models\Notice;
+use App\Models\ForumComment;
+use App\Observers\MessageObserver;
+use App\Observers\NoticeObserver;
+use App\Observers\ForumObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,8 +29,29 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Share notifications with all views (or specifically master layout)
-        view()->composer('components.master-layout', function ($view) {
+        // Register Model Observers
+        Message::observe(MessageObserver::class);
+        Notice::observe(NoticeObserver::class);
+        ForumComment::observe(ForumObserver::class);
+
+        // Share global settings (Cached)
+        $settings = Cache::remember('school_settings', 86400, function () {
+            return SchoolSetting::first() ?? new SchoolSetting();
+        });
+
+        // Apply dynamic timezone and date format
+        if ($settings->timezone) {
+            date_default_timezone_set($settings->timezone);
+            config(['app.timezone' => $settings->timezone]);
+        }
+        if ($settings->date_format) {
+            config(['app.date_format' => $settings->date_format]);
+        }
+
+        // Share notifications and global settings with admin master layout
+        view()->composer('components.master-layout', function ($view) use ($settings) {
+            $view->with('settings', $settings);
+
             if (auth()->check()) {
                 $notifications = Notification::where('user_id', auth()->id())
                     ->latest()

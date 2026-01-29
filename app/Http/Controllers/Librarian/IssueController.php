@@ -9,9 +9,26 @@ use App\Models\Book;
 use App\Models\BookIssue;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\LibraryService;
 
 class IssueController extends Controller
 {
+    protected $libraryService;
+
+    public function __construct(LibraryService $libraryService)
+    {
+        $this->libraryService = $libraryService;
+    }
+
+    public function index()
+    {
+        $requests = BookIssue::where('status', 'requested')
+            ->with(['book', 'user'])
+            ->latest()
+            ->paginate(15);
+
+        return view('librarian.issue.index', compact('requests'));
+    }
     public function create()
     {
         $books = Book::where('available_copies', '>', 0)->get();
@@ -81,5 +98,29 @@ class IssueController extends Controller
         $issue->book->increment('available_copies');
 
         return back()->with('success', 'Book returned successfully.');
+    }
+
+    public function approve(Request $request, $id)
+    {
+        $request->validate([
+            'due_date' => 'required|date|after:today'
+        ]);
+
+        try {
+            $this->libraryService->approveRequest($id, $request->due_date);
+            return back()->with('success', 'Request approved and book issued.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function cancel($id)
+    {
+        try {
+            $this->libraryService->cancelRequest($id);
+            return back()->with('success', 'Request cancelled and book returned to stock.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

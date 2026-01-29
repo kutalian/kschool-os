@@ -10,14 +10,14 @@
                 <p class="text-gray-500">Total Students: {{ $classRoom->students->count() }}</p>
             </div>
             <div class="flex gap-2">
-                <button
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+                <a href="{{ route('staff.attendance.create', ['class_id' => $classRoom->id]) }}"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm flex items-center">
                     <i class="fas fa-clipboard-check mr-2"></i> Attendance
-                </button>
-                <button
-                    class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold transition shadow-sm">
+                </a>
+                <a href="{{ route('staff.classes.export', $classRoom->id) }}"
+                    class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg font-semibold transition shadow-sm flex items-center">
                     <i class="fas fa-download mr-1"></i> Export List
-                </button>
+                </a>
             </div>
         </div>
 
@@ -61,10 +61,11 @@
                                     <div class="text-xs text-gray-400">{{ $student->parent->phone ?? '' }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button class="text-gray-400 hover:text-blue-600 transition mx-1 tooltip tooltip-left"
-                                        data-tip="View Profile">
+                                    <a href="{{ route('staff.disciplinary.create', ['student_id' => $student->id]) }}"
+                                        class="text-gray-400 hover:text-blue-600 transition mx-1 tooltip tooltip-left"
+                                        data-tip="Report Incident">
                                         <i class="fas fa-eye"></i>
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
                         @empty

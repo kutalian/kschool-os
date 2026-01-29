@@ -2,10 +2,12 @@
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Notice Board</h1>
-            <a href="{{ route('notices.create') }}"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
-                <i class="fas fa-bullhorn mr-2"></i> Post Notice
-            </a>
+            @if(auth()->user()->role === 'admin')
+                <a href="{{ route('notices.create') }}"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    <i class="fas fa-bullhorn mr-2"></i> Post Notice
+                </a>
+            @endif
         </div>
 
         @if(session('success'))
@@ -48,18 +50,20 @@
                         {{ $notice->message }}
                     </div>
 
-                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-100 space-x-3">
-                        <a href="{{ route('notices.edit', $notice->id) }}"
-                            class="text-yellow-600 hover:text-yellow-900 transition font-medium text-sm"><i
-                                class="fas fa-edit mr-1"></i> Edit</a>
-                        <form action="{{ route('notices.destroy', $notice->id) }}" method="POST" class="inline-block"
-                            onsubmit="return confirm('Delete this notice?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-red-600 hover:text-red-900 transition font-medium text-sm"><i
-                                    class="fas fa-trash mr-1"></i> Delete</button>
-                        </form>
-                    </div>
+                    @if(auth()->user()->role === 'admin')
+                        <div class="flex justify-end mt-4 pt-4 border-t border-gray-100 space-x-3">
+                            <a href="{{ route('notices.edit', $notice->id) }}"
+                                class="text-yellow-600 hover:text-yellow-900 transition font-medium text-sm"><i
+                                    class="fas fa-edit mr-1"></i> Edit</a>
+                            <form action="{{ route('notices.destroy', $notice->id) }}" method="POST" class="inline-block"
+                                onsubmit="return confirm('Delete this notice?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-600 hover:text-red-900 transition font-medium text-sm"><i
+                                        class="fas fa-trash mr-1"></i> Delete</button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
             @empty
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
@@ -68,10 +72,12 @@
                     </div>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">No Notices Found</h3>
                     <p class="text-gray-500 mb-6">There are no notices posted yet.</p>
-                    <a href="{{ route('notices.create') }}"
-                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        <i class="fas fa-plus mr-2"></i> Create First Notice
-                    </a>
+                    @if(auth()->user()->role === 'admin')
+                        <a href="{{ route('notices.create') }}"
+                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            <i class="fas fa-plus mr-2"></i> Create First Notice
+                        </a>
+                    @endif
                 </div>
             @endforelse
         </div>

@@ -52,6 +52,81 @@ class LibraryService
     }
 
     /**
+     * Staff requests a book.
+     * Decrements available copies (effectively reserving it).
+     */
+    public function requestBook(int $bookId, int $userId): BookIssue
+    {
+        return DB::transaction(function () use ($bookId, $userId) {
+            $book = Book::lockForUpdate()->find($bookId);
+
+            if (!$book || $book->available_copies < 1) {
+                throw new \Exception("Book is not available for request.");
+            }
+
+            // Check if user already has a pending request or active issue for this book
+            $existing = BookIssue::where('book_id', $bookId)
+                ->where('user_id', $userId)
+                ->whereIn('status', ['requested', 'issued'])
+                ->exists();
+
+            if ($existing) {
+                throw new \Exception("You already have this book or a pending request for it.");
+            }
+
+            $issue = BookIssue::create([
+                'book_id' => $bookId,
+                'user_id' => $userId,
+                'status' => 'requested',
+            ]);
+
+            $book->decrement('available_copies');
+
+            return $issue;
+        });
+    }
+
+    /**
+     * Approve a pending request.
+     */
+    public function approveRequest(int $issueId, string $dueDate): BookIssue
+    {
+        return DB::transaction(function () use ($issueId, $dueDate) {
+            $issue = BookIssue::lockForUpdate()->find($issueId);
+
+            if (!$issue || $issue->status !== 'requested') {
+                throw new \Exception("Invalid request.");
+            }
+
+            $issue->update([
+                'issue_date' => Carbon::now(),
+                'due_date' => Carbon::parse($dueDate),
+                'status' => 'issued',
+            ]);
+
+            return $issue;
+        });
+    }
+
+    /**
+     * Cancel a request.
+     * Increments available copies.
+     */
+    public function cancelRequest(int $issueId): void
+    {
+        DB::transaction(function () use ($issueId) {
+            $issue = BookIssue::lockForUpdate()->find($issueId);
+
+            if (!$issue || $issue->status !== 'requested') {
+                throw new \Exception("Invalid request.");
+            }
+
+            $issue->book->increment('available_copies');
+            $issue->delete();
+        });
+    }
+
+    /**
      * Return a book.
      * Increments available copies.
      * Calculates fine if overdue.

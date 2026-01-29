@@ -22,7 +22,20 @@ class SettingController extends Controller
     {
         // Get the first settings row or create empty instance
         $settings = SchoolSetting::first() ?? new SchoolSetting();
-        return view('admin.settings.general', compact('settings'));
+
+        // Fetch and group world timezones
+        $timezones = [];
+        foreach (\DateTimeZone::listIdentifiers() as $timezone) {
+            $parts = explode('/', $timezone);
+            $region = $parts[0] ?? 'Others';
+            if (count($parts) > 1) {
+                $timezones[$region][] = $timezone;
+            } else {
+                $timezones['Others'][] = $timezone;
+            }
+        }
+
+        return view('admin.settings.general', compact('settings', 'timezones'));
     }
 
     public function update(Request $request)
@@ -33,6 +46,8 @@ class SettingController extends Controller
             'logo' => 'nullable|image|max:2048', // 2MB Max
             'favicon' => 'nullable|image|mimes:ico,png,jpg|max:1024',
             'theme_color' => 'nullable|string|max:20',
+            'timezone' => 'nullable|string|max:100',
+            'date_format' => 'nullable|string|max:50',
             // Add other validations as needed
         ]);
 

@@ -29,7 +29,7 @@
             <div class="p-6 md:p-8">
                 <!-- Header -->
                 <div class="flex items-start justify-between mb-6">
-                    <div>
+                    <div class="flex-1">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
                             {{ $forumPost->category->name }}
@@ -51,16 +51,32 @@
                         </div>
                     </div>
 
-                    <!-- Like Button -->
-                    <form action="{{ route('forum.like', $forumPost->id) }}" method="POST">
-                        @csrf
-                        <button type="submit"
-                            class="flex flex-col items-center group transition duration-150 ease-in-out {{ $forumPost->likes->where('user_id', auth()->id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }}">
-                            <i
-                                class="{{ $forumPost->likes->where('user_id', auth()->id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-2xl mb-1 group-hover:scale-110 transform transition"></i>
-                            <span class="text-sm font-medium">{{ $forumPost->likes->count() }}</span>
-                        </button>
-                    </form>
+                    <div class="flex items-center space-x-4">
+                        <!-- Post Actions (Admin/Owner) -->
+                        @if (auth()->id() === $forumPost->user_id || auth()->user()->role === 'admin')
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('forum.edit', $forumPost->id) }}"
+                                   class="text-gray-400 hover:text-blue-600 transition duration-150">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ route('forum.delete', $forumPost->id) }}"
+                                   class="text-gray-400 hover:text-red-600 transition duration-150">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        @endif
+
+                        <!-- Like Button -->
+                        <form action="{{ route('forum.like', $forumPost->id) }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                    class="flex flex-col items-center group transition duration-150 ease-in-out {{ $forumPost->likes->where('user_id', auth()->id())->count() > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500' }}">
+                                <i
+                                    class="{{ $forumPost->likes->where('user_id', auth()->id())->count() > 0 ? 'fas' : 'far' }} fa-heart text-2xl mb-1 group-hover:scale-110 transform transition"></i>
+                                <span class="text-sm font-medium">{{ $forumPost->likes->count() }}</span>
+                            </button>
+                        </form>
+                    </div>
                 </div>
 
                 @if($forumPost->poll && $forumPost->poll->is_active)
@@ -157,9 +173,17 @@
                                 <h4 class="text-sm font-bold text-gray-900">
                                     {{ $comment->is_anonymous ? 'Anonymous' : $comment->user->name }}
                                 </h4>
-                                <span class="text-xs text-gray-500">
-                                    {{ $comment->created_at->diffForHumans() }}
-                                </span>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-xs text-gray-500">
+                                        {{ $comment->created_at->diffForHumans() }}
+                                    </span>
+                                    @if(auth()->id() === $comment->user_id || auth()->user()->role === 'admin')
+                                        <a href="{{ route('forum.comments.delete', $comment->id) }}"
+                                           class="text-gray-400 hover:text-red-600 transition duration-150">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                             <div class="text-gray-700 text-sm">
                                 {!! nl2br(e($comment->content)) !!}
@@ -182,15 +206,24 @@
                         <div class="mb-4">
                             <label for="content" class="sr-only">Add a comment</label>
                             <textarea name="content" id="content" rows="3"
-                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3"
-                                placeholder="Share your thoughts..." required></textarea>
+                                class="w-full rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 {{ $errors->has('content') ? 'border-red-500' : 'border-gray-300' }}"
+                                placeholder="Share your thoughts..." required>{{ old('content') }}</textarea>
+                            @error('content')
+                                <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <input type="checkbox" name="is_anonymous" id="comment_is_anonymous"
-                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                <label for="comment_is_anonymous" class="ml-2 block text-sm text-gray-700">Com.
-                                    Anon.</label>
+                            <div class="flex flex-col">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="is_anonymous" id="comment_is_anonymous" value="1"
+                                        {{ old('is_anonymous') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                    <label for="comment_is_anonymous" class="ml-2 block text-sm text-gray-700">Com.
+                                        Anon.</label>
+                                </div>
+                                @error('is_anonymous')
+                                    <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
+                                @enderror
                             </div>
                             <button type="submit"
                                 class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">

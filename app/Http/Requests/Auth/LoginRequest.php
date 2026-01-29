@@ -54,6 +54,14 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+        if ($user->isDeletionPending()) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'login_id' => 'Your account is currently pending deletion approval. Please contact administration if you wish to cancel this request.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

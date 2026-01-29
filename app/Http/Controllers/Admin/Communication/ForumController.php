@@ -4,6 +4,13 @@ namespace App\Http\Controllers\Admin\Communication;
 
 use App\Http\Controllers\Controller;
 use App\Models\ForumPost;
+use App\Models\ForumComment;
+use App\Models\ForumCategory;
+use App\Models\ForumPoll;
+use App\Models\ForumPollOption;
+use App\Models\ForumPollVote;
+use App\Models\ForumLike;
+use App\Models\ForumPostView;
 use Illuminate\Http\Request;
 
 class ForumController extends Controller
@@ -25,7 +32,7 @@ class ForumController extends Controller
      */
     public function create()
     {
-        $categories = \App\Models\ForumCategory::where('is_active', true)->get();
+        $categories = ForumCategory::where('is_active', true)->get();
         return view('admin.communication.forum.create', compact('categories'));
     }
 
@@ -45,23 +52,30 @@ class ForumController extends Controller
             'poll_options.*' => 'required_with:poll_options|string|max:255',
         ]);
 
-        $post = new ForumPost($validated);
+        $post = new ForumPost([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'category_id' => $validated['category_id'],
+            'is_anonymous' => $request->boolean('is_anonymous'),
+        ]);
         $post->user_id = auth()->id();
         $post->save();
 
         // Handle Poll Creation
-        if ($request->has('has_poll') && $request->has_poll) {
-            $poll = \App\Models\ForumPoll::create([
+        if ($request->boolean('has_poll')) {
+            $poll = ForumPoll::create([
                 'forum_post_id' => $post->id,
-                'question' => $request->poll_question,
+                'question' => $validated['poll_question'],
             ]);
 
-            foreach ($request->poll_options as $optionText) {
-                if (!empty($optionText)) {
-                    \App\Models\ForumPollOption::create([
-                        'forum_poll_id' => $poll->id,
-                        'option_text' => $optionText,
-                    ]);
+            if (isset($validated['poll_options'])) {
+                foreach ($validated['poll_options'] as $optionText) {
+                    if (!empty($optionText)) {
+                        ForumPollOption::create([
+                            'forum_poll_id' => $poll->id,
+                            'option_text' => $optionText,
+                        ]);
+                    }
                 }
             }
         }
@@ -75,21 +89,21 @@ class ForumController extends Controller
             'option_id' => 'required|exists:forum_poll_options,id',
         ]);
 
-        $poll = \App\Models\ForumPoll::findOrFail($pollId);
+        $poll = ForumPoll::findOrFail($pollId);
 
         if ($poll->hasVoted(auth()->id())) {
             return back()->with('error', 'You have already voted in this poll.');
         }
 
         // Record Vote
-        \App\Models\ForumPollVote::create([
+        ForumPollVote::create([
             'forum_poll_id' => $poll->id,
             'forum_poll_option_id' => $request->option_id,
             'user_id' => auth()->id(),
         ]);
 
         // Increment Count
-        $option = \App\Models\ForumPollOption::find($request->option_id);
+        $option = ForumPollOption::find($request->option_id);
         $option->increment('vote_count');
 
         return back()->with('success', 'Vote recorded successfully.');
@@ -103,10 +117,20 @@ class ForumController extends Controller
      */
     public function show($id)
     {
-        $forumPost = ForumPost::with(['user', 'category', 'comments.user', 'likes'])->findOrFail($id);
+        $forumPost = ForumPost::with(['user', 'category', 'comments.user', 'likes', 'poll.options'])->findOrFail($id);
 
-        // Count views
-        $forumPost->increment('view_count');
+        // Track unique view
+        $viewExists = ForumPostView::where('forum_post_id', $forumPost->id)
+            ->where('user_id', auth()->id())
+            ->exists();
+
+        if (!$viewExists) {
+            ForumPostView::create([
+                'forum_post_id' => $forumPost->id,
+                'user_id' => auth()->id(),
+            ]);
+            $forumPost->increment('view_count');
+        }
 
         return view('admin.communication.forum.show', compact('forumPost'));
     }
@@ -114,25 +138,111 @@ class ForumController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ForumPost $forumPost)
+    public function edit(ForumPost $forum)
     {
-        //
+        if (auth()->id() !== $forum->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $categories = ForumCategory::where('is_active', true)->get();
+        return view('admin.communication.forum.edit', compact('forum', 'categories'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ForumPost $forumPost)
+    public function update(Request $request, ForumPost $forum)
     {
-        //
+        if (auth()->id() !== $forum->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'category_id' => 'required|exists:forum_categories,id',
+            'is_anonymous' => 'sometimes|boolean',
+            'poll_question' => 'nullable|string|max:255',
+            'has_poll' => 'sometimes|boolean',
+            'poll_options' => 'required_with:has_poll|array|min:2',
+            'poll_options.*' => 'required_with:poll_options|string|max:255',
+        ]);
+
+        $forum->update([
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'category_id' => $validated['category_id'],
+            'is_anonymous' => $request->boolean('is_anonymous'),
+        ]);
+
+        // Handle Poll Update/Creation
+        if ($forum->poll) {
+            if (!empty($validated['poll_question'])) {
+                $forum->poll->update(['question' => $validated['poll_question']]);
+            }
+        } elseif ($request->boolean('has_poll')) {
+            $poll = ForumPoll::create([
+                'forum_post_id' => $forum->id,
+                'question' => $validated['poll_question'],
+            ]);
+
+            foreach ($validated['poll_options'] as $optionText) {
+                if (!empty($optionText)) {
+                    ForumPollOption::create([
+                        'forum_poll_id' => $poll->id,
+                        'option_text' => $optionText,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->route('forum.show', $forum->id)->with('success', 'Discussion updated successfully.');
+    }
+
+    public function confirmDelete(ForumPost $forum)
+    {
+        if (auth()->id() !== $forum->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        return view('admin.communication.forum.delete_post', compact('forum'));
+    }
+
+    public function confirmDeleteComment($commentId)
+    {
+        $comment = ForumComment::with('post')->findOrFail($commentId);
+
+        if (auth()->id() !== $comment->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        return view('admin.communication.forum.delete_comment', compact('comment'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ForumPost $forumPost)
+    public function destroy(ForumPost $forum)
     {
-        //
+        if (auth()->id() !== $forum->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $forum->delete();
+        return redirect()->route('forum.index')->with('success', 'Post deleted successfully.');
+    }
+
+    public function destroyComment($commentId)
+    {
+        $comment = ForumComment::findOrFail($commentId);
+
+        if (auth()->id() !== $comment->user_id && auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $postId = $comment->post_id;
+        $comment->delete();
+        return redirect()->route('forum.show', $postId)->with('success', 'Comment deleted successfully.');
     }
 
     public function storeComment(Request $request, $postId)
@@ -142,11 +252,11 @@ class ForumController extends Controller
             'is_anonymous' => 'sometimes|boolean',
         ]);
 
-        $comment = new \App\Models\ForumComment();
+        $comment = new ForumComment();
         $comment->post_id = $postId;
         $comment->user_id = auth()->id();
         $comment->content = $request->input('content');
-        $comment->is_anonymous = $request->has('is_anonymous');
+        $comment->is_anonymous = $request->boolean('is_anonymous');
         $comment->save();
 
         return back()->with('success', 'Comment posted successfully.');
@@ -154,7 +264,7 @@ class ForumController extends Controller
 
     public function toggleLike($postId)
     {
-        $like = \App\Models\ForumLike::where('post_id', $postId)
+        $like = ForumLike::where('post_id', $postId)
             ->where('user_id', auth()->id())
             ->first();
 
@@ -162,7 +272,7 @@ class ForumController extends Controller
             $like->delete();
             $message = 'Post unliked.';
         } else {
-            \App\Models\ForumLike::create([
+            ForumLike::create([
                 'post_id' => $postId,
                 'user_id' => auth()->id(),
             ]);

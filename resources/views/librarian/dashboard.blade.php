@@ -3,7 +3,7 @@
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Library Dashboard</h1>
         
         {{-- Stats Grid --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
                 <div class="rounded-full bg-blue-100 p-4 mr-4 text-blue-600">
                     <i class="fas fa-book text-2xl"></i>
@@ -23,6 +23,16 @@
                     <div class="text-2xl font-bold text-gray-800">{{ $issuedBooks }}</div>
                 </div>
             </div>
+
+            <a href="{{ route('librarian.requests.index') }}" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center hover:shadow-md transition group">
+                <div class="rounded-full bg-orange-100 p-4 mr-4 text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition">
+                    <i class="fas fa-clock text-2xl"></i>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-500 font-medium group-hover:text-orange-600 transition">Pending Requests</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $pendingRequests }}</div>
+                </div>
+            </a>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
                 <div class="rounded-full bg-red-100 p-4 mr-4 text-red-600">

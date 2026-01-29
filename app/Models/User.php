@@ -26,6 +26,8 @@ class User extends Authenticatable implements \OwenIt\Auditing\Contracts\Auditab
         'profile_pic',
         'is_active',
         'last_login',
+        'deletion_requested_at',
+        'deletion_reason',
     ];
 
     /**
@@ -67,5 +69,16 @@ class User extends Authenticatable implements \OwenIt\Auditing\Contracts\Auditab
     public function parent()
     {
         return $this->hasOne(StudentParent::class, 'user_id');
+    }
+
+    public function getFirstNameAttribute()
+    {
+        $name = trim($this->name ?: $this->username);
+        return explode(' ', $name)[0];
+    }
+
+    public function isDeletionPending()
+    {
+        return !is_null($this->deletion_requested_at);
     }
 }

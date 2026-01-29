@@ -87,11 +87,12 @@ class MarkController extends Controller
             'exam_id' => 'required|exists:exams,id',
             'subject_id' => 'required|exists:subjects,id',
             'marks' => 'required|array',
-            'marks.*' => 'numeric|min:0|max:100',
+            'marks.*' => 'nullable|numeric|min:0|max:100',
+            'remarks' => 'nullable|array',
         ]);
 
         foreach ($request->marks as $studentId => $score) {
-            if ($score !== null) {
+            if ($score !== null || isset($request->remarks[$studentId])) {
                 Mark::updateOrCreate(
                     [
                         'exam_id' => $request->exam_id,
@@ -101,6 +102,7 @@ class MarkController extends Controller
                     [
                         'marks_obtained' => $score,
                         'total_marks' => 100, // Default for now
+                        'remarks' => $request->remarks[$studentId] ?? null,
                     ]
                 );
             }

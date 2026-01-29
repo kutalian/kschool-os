@@ -14,9 +14,11 @@ class Attendance extends Model
 
     protected $fillable = [
         'student_id',
+        'class_id',
         'date',
         'status',
         'remarks',
+        'recorded_by',
     ];
 
     protected $casts = [
@@ -26,5 +28,15 @@ class Attendance extends Model
     public function student()
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function class()
+    {
+        return $this->belongsTo(ClassRoom::class, 'class_id');
+    }
+
+    public function recorder()
+    {
+        return $this->belongsTo(User::class, 'recorded_by');
     }
 }

@@ -231,10 +231,6 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::resource('announcements', App\Http\Controllers\Admin\Communication\AnnouncementController::class);
     Route::resource('complaints', App\Http\Controllers\Admin\Communication\ComplaintController::class);
     Route::resource('parent-teacher-meetings', App\Http\Controllers\Admin\Communication\ParentTeacherMeetingController::class);
-    Route::resource('forum', App\Http\Controllers\Admin\Communication\ForumController::class);
-    Route::post('forum/{post}/comment', [App\Http\Controllers\Admin\Communication\ForumController::class, 'storeComment'])->name('forum.comments.store');
-    Route::post('forum/{post}/like', [App\Http\Controllers\Admin\Communication\ForumController::class, 'toggleLike'])->name('forum.like');
-    Route::post('forum/poll/{poll}/vote', [App\Http\Controllers\Admin\Communication\ForumController::class, 'vote'])->name('forum.poll.vote');
 
     // Certificate Routes
     Route::get('certificates/{certificate}/delete', [App\Http\Controllers\Admin\CertificateController::class, 'confirmDelete'])->name('certificates.delete');
@@ -257,6 +253,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
         // Site Identity (Settings)
         Route::get('settings', [App\Http\Controllers\Admin\SettingController::class, 'edit'])->name('settings.edit');
         Route::post('settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+
+        // User Deletion Requests
+        Route::get('users/deletions', [App\Http\Controllers\Admin\UserDeletionController::class, 'index'])->name('admin.users.deletions');
+        Route::post('users/{user}/deletions/approve', [App\Http\Controllers\Admin\UserDeletionController::class, 'approve'])->name('admin.users.deletions.approve');
+        Route::post('users/{user}/deletions/reject', [App\Http\Controllers\Admin\UserDeletionController::class, 'reject'])->name('admin.users.deletions.reject');
 
         // Themes & Customization
         Route::get('themes', [App\Http\Controllers\Admin\CmsController::class, 'themes'])->name('cms.themes');
@@ -296,6 +297,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/staff/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('staff.dashboard');
 
+    // Notification Routes
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::get('/notifications/{notification}/mark-read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
+
     // Student Routes
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'index'])->name('dashboard');
@@ -312,6 +317,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/issue', [App\Http\Controllers\Librarian\IssueController::class, 'create'])->name('issue.create');
         Route::post('/issue', [App\Http\Controllers\Librarian\IssueController::class, 'store'])->name('issue.store');
         Route::post('/return/{id}', [App\Http\Controllers\Librarian\IssueController::class, 'returnBook'])->name('issue.return');
+
+        // Request Management
+        Route::get('/requests', [App\Http\Controllers\Librarian\IssueController::class, 'index'])->name('requests.index');
+        Route::post('/requests/{id}/approve', [App\Http\Controllers\Librarian\IssueController::class, 'approve'])->name('requests.approve');
+        Route::delete('/requests/{id}/cancel', [App\Http\Controllers\Librarian\IssueController::class, 'cancel'])->name('requests.cancel');
     });
 
     Route::middleware('role:accountant')->prefix('accountant')->name('accountant.')->group(function () {
@@ -339,6 +349,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
         Route::get('/classes', [App\Http\Controllers\Staff\MyClassController::class, 'index'])->name('classes.index');
         Route::get('/classes/{class}', [App\Http\Controllers\Staff\MyClassController::class, 'show'])->name('classes.show');
+        Route::get('/classes/{class}/export', [App\Http\Controllers\Staff\MyClassController::class, 'export'])->name('classes.export');
         Route::get('/timetable', [App\Http\Controllers\Staff\TimetableController::class, 'index'])->name('timetable.index');
 
         // Attendance Routes
@@ -351,6 +362,40 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/marks', [App\Http\Controllers\Staff\MarkController::class, 'index'])->name('marks.index');
         Route::get('/marks/entry', [App\Http\Controllers\Staff\MarkController::class, 'create'])->name('marks.create');
         Route::post('/marks', [App\Http\Controllers\Staff\MarkController::class, 'store'])->name('marks.store');
+
+        // Assignment Routes
+        Route::resource('assignments', App\Http\Controllers\Staff\AssignmentController::class);
+        Route::get('assignments/{assignment}/submissions', [App\Http\Controllers\Staff\AssignmentController::class, 'submissions'])->name('assignments.submissions');
+        Route::post('submissions/{submission}/grade', [App\Http\Controllers\Staff\AssignmentController::class, 'grade'])->name('submissions.grade');
+
+        // Lesson Plan Routes
+        Route::resource('lesson-plans', App\Http\Controllers\Staff\LessonPlanController::class);
+
+        // Disciplinary Routes
+        Route::resource('disciplinary', App\Http\Controllers\Staff\DisciplinaryController::class)->only(['index', 'create', 'store', 'show']);
+
+        // Exam Question Routes
+        Route::resource('exam-questions', App\Http\Controllers\Staff\ExamQuestionController::class);
+
+        // Message Routes
+        Route::get('messages/sent', [App\Http\Controllers\Staff\MessageController::class, 'sent'])->name('messages.sent');
+        Route::get('messages/{message}/delete', [App\Http\Controllers\Staff\MessageController::class, 'confirmDelete'])->name('messages.delete');
+        Route::resource('messages', App\Http\Controllers\Staff\MessageController::class);
+
+        // Notice Routes
+        Route::get('notices', [App\Http\Controllers\Admin\Communication\NoticeController::class, 'index'])->name('notices.index');
+
+        // Leave Routes
+        Route::resource('leave', App\Http\Controllers\Staff\LeaveController::class)->only(['index', 'create', 'store', 'show']);
+
+        // Payroll Routes
+        Route::get('/payroll', [App\Http\Controllers\Staff\PayrollController::class, 'index'])->name('payroll.index');
+        Route::get('/payroll/{payroll}', [App\Http\Controllers\Staff\PayrollController::class, 'show'])->name('payroll.show');
+
+        // Library Routes
+        Route::get('/library', [App\Http\Controllers\Staff\LibraryController::class, 'index'])->name('library.index');
+        Route::get('/library/available', [App\Http\Controllers\Staff\LibraryController::class, 'available'])->name('library.available');
+        Route::post('/library/request/{book}', [App\Http\Controllers\Staff\LibraryController::class, 'requestBook'])->name('library.request');
     });
 
     // Receptionist Routes
@@ -369,6 +414,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:principal')->prefix('principal')->name('principal.')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Principal\DashboardController::class, 'index'])->name('dashboard');
         // Principal usually has access to everything, often shares Admin routes or has read-only views
+    });
+
+    // Shared Communication Routes (Forum)
+    Route::middleware('role:admin,staff')->group(function () {
+        Route::get('forum/{forum}/delete', [App\Http\Controllers\Admin\Communication\ForumController::class, 'confirmDelete'])->name('forum.delete');
+        Route::resource('forum', App\Http\Controllers\Admin\Communication\ForumController::class);
+        Route::get('forum/comment/{comment}/delete', [App\Http\Controllers\Admin\Communication\ForumController::class, 'confirmDeleteComment'])->name('forum.comments.delete');
+        Route::post('forum/{post}/comment', [App\Http\Controllers\Admin\Communication\ForumController::class, 'storeComment'])->name('forum.comments.store');
+        Route::delete('forum/comment/{comment}', [App\Http\Controllers\Admin\Communication\ForumController::class, 'destroyComment'])->name('forum.comments.destroy');
+        Route::post('forum/{post}/like', [App\Http\Controllers\Admin\Communication\ForumController::class, 'toggleLike'])->name('forum.like');
+        Route::post('forum/poll/{poll}/vote', [App\Http\Controllers\Admin\Communication\ForumController::class, 'vote'])->name('forum.poll.vote');
     });
 });
 
