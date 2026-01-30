@@ -245,6 +245,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->group(fu
     Route::get('system/activity', [App\Http\Controllers\Admin\SystemLogController::class, 'activity'])->name('system.activity');
     Route::get('system/login-history', [App\Http\Controllers\Admin\SystemLogController::class, 'loginHistory'])->name('system.login-history');
     Route::get('system/backups', [App\Http\Controllers\Admin\SystemLogController::class, 'backups'])->name('system.backups');
+    Route::post('system/backups/create', [App\Http\Controllers\Admin\SystemLogController::class, 'createBackup'])->name('system.backups.create');
+    Route::get('system/backups/{id}/download', [App\Http\Controllers\Admin\SystemLogController::class, 'downloadBackup'])->name('system.backups.download');
 
     // Unified Website Manager
     Route::prefix('website')->group(function () {
